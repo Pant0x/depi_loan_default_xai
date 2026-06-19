@@ -1,6 +1,11 @@
 # LendVerify XAI: Automated Explainable AI Credit Risk Suite
 
+[![Live Demo](https://img.shields.io/badge/Render-Live%20Demo-indigo?style=for-the-badge&logo=render)](https://depi-loan-default-xai.onrender.com)
+
+> 🚀 **Live Demo:** Try the deployed application in production at: **[https://depi-loan-default-xai.onrender.com](https://depi-loan-default-xai.onrender.com)**
+
 LendVerify XAI is a production-grade, state-of-the-art **Explainable AI (XAI)** loan underwriting application built using the Kaggle Loan Default dataset. The system features a high-performance **FastAPI backend** for machine learning inference and real-time **SHAP local explanations**, paired with a professional, dark-themed **Flask frontend web app** styled with Tailwind CSS.
+
 
 ---
 

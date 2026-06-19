@@ -92,8 +92,8 @@
                         <!-- Age -->
                         <div>
                             <label for="age" class="block text-sm font-medium text-slate-300">Age (years)</label>
-                            <input type="number" name="age" id="age" min="18" max="100" value="35" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                            <input type="number" name="age" id="age" min="18" max="100" placeholder="35" required
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
                             <p class="mt-1 text-[11px] text-slate-500">Applicant must be between 18 and 100.</p>
                         </div>
                         
@@ -101,9 +101,10 @@
                         <div>
                             <label for="education" class="block text-sm font-medium text-slate-300">Education Level</label>
                             <select name="education" id="education" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                                <option value="" disabled selected>Please select...</option>
                                 <option value="High School">High School</option>
-                                <option value="Bachelor's" selected>Bachelor's</option>
+                                <option value="Bachelor's">Bachelor's</option>
                                 <option value="Master's">Master's</option>
                                 <option value="PhD">PhD</option>
                             </select>
@@ -113,8 +114,9 @@
                         <div>
                             <label for="employmenttype" class="block text-sm font-medium text-slate-300">Employment Type</label>
                             <select name="employmenttype" id="employmenttype" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-                                <option value="Full-time" selected>Full-time</option>
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                                <option value="" disabled selected>Please select...</option>
+                                <option value="Full-time">Full-time</option>
                                 <option value="Part-time">Part-time</option>
                                 <option value="Self-employed">Self-employed</option>
                                 <option value="Unemployed">Unemployed</option>
@@ -124,8 +126,8 @@
                         <!-- Months Employed -->
                         <div>
                             <label for="monthsemployed" class="block text-sm font-medium text-slate-300">Months Employed</label>
-                            <input type="number" name="monthsemployed" id="monthsemployed" min="0" max="600" value="60" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                            <input type="number" name="monthsemployed" id="monthsemployed" min="0" max="600" placeholder="60" required
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
                             <p class="mt-1 text-[11px] text-slate-500">Duration in months at the current employer.</p>
                         </div>
 
@@ -133,9 +135,10 @@
                         <div>
                             <label for="maritalstatus" class="block text-sm font-medium text-slate-300">Marital Status</label>
                             <select name="maritalstatus" id="maritalstatus" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                                <option value="" disabled selected>Please select...</option>
                                 <option value="Divorced">Divorced</option>
-                                <option value="Married" selected>Married</option>
+                                <option value="Married">Married</option>
                                 <option value="Single">Single</option>
                             </select>
                         </div>
@@ -155,32 +158,32 @@
                         <!-- Income -->
                         <div>
                             <label for="income" class="block text-sm font-medium text-slate-300">Annual Income ($)</label>
-                            <input type="number" name="income" id="income" min="0" step="500" value="55000" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                            <input type="number" name="income" id="income" min="0" step="500" placeholder="55000" required
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
                             <p class="mt-1 text-[11px] text-slate-500">Gross annual income before taxes.</p>
                         </div>
 
                         <!-- Credit Score -->
                         <div>
                             <label for="creditscore" class="block text-sm font-medium text-slate-300">Credit Score (FICO)</label>
-                            <input type="number" name="creditscore" id="creditscore" min="300" max="850" value="680" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                            <input type="number" name="creditscore" id="creditscore" min="300" max="850" placeholder="680" required
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
                             <p class="mt-1 text-[11px] text-slate-500">Standard FICO score (range 300 - 850).</p>
                         </div>
 
                         <!-- Number of Credit Lines -->
                         <div>
                             <label for="numcreditlines" class="block text-sm font-medium text-slate-300">Open Credit Lines</label>
-                            <input type="number" name="numcreditlines" id="numcreditlines" min="0" max="30" value="5" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                            <input type="number" name="numcreditlines" id="numcreditlines" min="0" max="30" placeholder="5" required
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
                             <p class="mt-1 text-[11px] text-slate-500">Total number of open accounts and credit lines.</p>
                         </div>
 
                         <!-- Debt-to-Income (DTI) Ratio -->
                         <div>
                             <label for="dtiratio" class="block text-sm font-medium text-slate-300">DTI Ratio</label>
-                            <input type="number" name="dtiratio" id="dtiratio" min="0" max="2.0" step="0.01" value="0.35" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                            <input type="number" name="dtiratio" id="dtiratio" min="0" max="2.0" step="0.01" placeholder="0.35" required
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
                             <p class="mt-1 text-[11px] text-slate-500">Ratio of monthly debt payments to monthly income (e.g., 0.35 = 35%).</p>
                         </div>
 
@@ -188,8 +191,9 @@
                         <div>
                             <label for="hasmortgage" class="block text-sm font-medium text-slate-300">Has Mortgage?</label>
                             <select name="hasmortgage" id="hasmortgage" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-                                <option value="No" selected>No</option>
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                                <option value="" disabled selected>Please select...</option>
+                                <option value="No">No</option>
                                 <option value="Yes">Yes</option>
                             </select>
                         </div>
@@ -209,34 +213,35 @@
                         <!-- Loan Amount -->
                         <div>
                             <label for="loanamount" class="block text-sm font-medium text-slate-300">Loan Amount Requested ($)</label>
-                            <input type="number" name="loanamount" id="loanamount" min="0" step="500" value="15000" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                            <input type="number" name="loanamount" id="loanamount" min="0" step="500" placeholder="15000" required
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
                         </div>
 
                         <!-- Interest Rate -->
                         <div>
                             <label for="interestrate" class="block text-sm font-medium text-slate-300">Interest Rate (%)</label>
-                            <input type="number" name="interestrate" id="interestrate" min="0" max="100" step="0.01" value="12.0" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                            <input type="number" name="interestrate" id="interestrate" min="0" max="100" step="0.01" placeholder="12.0" required
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
                             <p class="mt-1 text-[11px] text-slate-500">Annual nominal interest rate (e.g. 12.00%).</p>
                         </div>
 
                         <!-- Loan Term -->
                         <div>
                             <label for="loanterm" class="block text-sm font-medium text-slate-300">Loan Term (months)</label>
-                            <input type="number" name="loanterm" id="loanterm" min="1" max="360" value="36" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                            <input type="number" name="loanterm" id="loanterm" min="1" max="360" placeholder="36" required
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
                         </div>
 
                         <!-- Loan Purpose -->
                         <div>
                             <label for="loanpurpose" class="block text-sm font-medium text-slate-300">Loan Purpose</label>
                             <select name="loanpurpose" id="loanpurpose" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                                <option value="" disabled selected>Please select...</option>
                                 <option value="Auto">Auto</option>
                                 <option value="Business">Business</option>
                                 <option value="Education">Education</option>
-                                <option value="Home" selected>Home</option>
+                                <option value="Home">Home</option>
                                 <option value="Other">Other</option>
                             </select>
                         </div>
@@ -245,8 +250,9 @@
                         <div>
                             <label for="hasdependents" class="block text-sm font-medium text-slate-300">Has Dependents?</label>
                             <select name="hasdependents" id="hasdependents" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-                                <option value="No" selected>No</option>
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                                <option value="" disabled selected>Please select...</option>
+                                <option value="No">No</option>
                                 <option value="Yes">Yes</option>
                             </select>
                         </div>
@@ -255,8 +261,9 @@
                         <div>
                             <label for="hascosigner" class="block text-sm font-medium text-slate-300">Has Co-signer?</label>
                             <select name="hascosigner" id="hascosigner" required
-                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-100 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
-                                <option value="No" selected>No</option>
+                                class="mt-1.5 block w-full rounded-xl bg-slate-950 border border-slate-800 text-slate-500/40 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                                <option value="" disabled selected>Please select...</option>
+                                <option value="No">No</option>
                                 <option value="Yes">Yes</option>
                             </select>
                         </div>
@@ -313,5 +320,25 @@
         </div>
     </footer>
 
+    <!-- Script to style select dropdowns like placeholders with dynamic coloring -->
+    <script>
+        document.querySelectorAll('select').forEach(select => {
+            const updateSelectColor = () => {
+                if (select.value === "") {
+                    select.classList.add('text-slate-500/40');
+                    select.classList.remove('text-slate-100');
+                } else {
+                    select.classList.remove('text-slate-500/40');
+                    select.classList.add('text-slate-100');
+                }
+            };
+            
+            // Initial call
+            updateSelectColor();
+            
+            // Listen for changes
+            select.addEventListener('change', updateSelectColor);
+        });
+    </script>
 </body>
 </html>

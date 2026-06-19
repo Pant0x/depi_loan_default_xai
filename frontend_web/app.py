@@ -1,5 +1,7 @@
 import os
 import requests
+import threading
+import time
 from flask import Flask, render_template, request, redirect, url_for, flash
 
 app = Flask(__name__)
@@ -7,6 +9,33 @@ app.secret_key = os.environ.get("FLASK_SECRET_KEY", "xai_super_secret_key_12345"
 
 # Backend API configuration (Render friendly)
 BACKEND_API_URL = os.environ.get("BACKEND_API_URL", "http://127.0.0.1:8000")
+
+# Keep-Alive Pinger to prevent Render instances from going offline/sleeping
+def keep_alive_pinger():
+    # Wait 30 seconds for the web server to boot up
+    time.sleep(30)
+    self_url = os.environ.get("RENDER_EXTERNAL_URL")
+    print(f"[Pinger] Active. Self URL: {self_url}, Backend URL: {BACKEND_API_URL}")
+    while True:
+        if self_url:
+            try:
+                requests.get(self_url, timeout=10)
+                print("[Pinger] Successfully pinged frontend self-url.")
+            except Exception as e:
+                print(f"[Pinger] Failed to ping frontend self-url: {e}")
+        if BACKEND_API_URL:
+            try:
+                requests.get(f"{BACKEND_API_URL}/health", timeout=10)
+                print("[Pinger] Successfully pinged backend API.")
+            except Exception as e:
+                print(f"[Pinger] Failed to ping backend API: {e}")
+        # Sleep for 10 minutes (Render sleep threshold is 15 minutes)
+        time.sleep(10 * 60)
+
+# Start keep-alive thread only when running in the Render production environment
+if os.environ.get("RENDER"):
+    threading.Thread(target=keep_alive_pinger, daemon=True).start()
+
 
 @app.route("/", methods=["GET"])
 def index():

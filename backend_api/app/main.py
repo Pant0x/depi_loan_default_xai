@@ -4,6 +4,34 @@ from fastapi.responses import JSONResponse
 from .schemas import LoanFeatures, LoanPredictResponse
 from .xai_engine import XAIEngine
 from contextlib import asynccontextmanager
+import os
+import threading
+import time
+import urllib.request
+
+# Keep-Alive Pinger to prevent Render instances from going offline/sleeping
+def keep_alive_pinger():
+    # Wait 30 seconds for the web server to boot up
+    time.sleep(30)
+    self_url = os.environ.get("RENDER_EXTERNAL_URL")
+    print(f"[Pinger] Active. Self URL: {self_url}")
+    while True:
+        if self_url:
+            try:
+                # Use standard library to ping self (prevents dependency errors)
+                req = urllib.request.Request(self_url, headers={'User-Agent': 'Mozilla/5.0'})
+                with urllib.request.urlopen(req, timeout=10) as response:
+                    pass
+                print("[Pinger] Successfully pinged backend self-url.")
+            except Exception as e:
+                print(f"[Pinger] Failed to ping backend self-url: {e}")
+        # Sleep for 10 minutes (Render sleep threshold is 15 minutes)
+        time.sleep(10 * 60)
+
+# Start keep-alive thread only when running in the Render production environment
+if os.environ.get("RENDER"):
+    threading.Thread(target=keep_alive_pinger, daemon=True).start()
+
 
 # Thread-safe global engine instance
 engine = None

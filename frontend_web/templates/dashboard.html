@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Analysis Dashboard - LendVerify XAI</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-full flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Navbar -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <a href="{{ url_for('index') }}" class="h-9 w-9 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 hover:scale-105 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </a>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">LendVerify XAI</h1>
+                    <p class="text-xs text-slate-400">Risk Assessment Dashboard</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3 text-xs font-semibold">
+                <span class="text-slate-400">Model:</span>
+                <span class="py-1 px-3 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wider text-[10px]">
+                    {{ result.model_type }}
+                </span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+        
+        <!-- Dashboard Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Side: Risk Score Gauge and Prediction Alert -->
+            <div class="lg:col-span-1 flex flex-col gap-8">
+                
+                <!-- Risk Meter Card -->
+                <div class="bg-slate-900/60 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col items-center justify-center relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                    <h3 class="text-sm font-semibold tracking-wider uppercase text-slate-400 mb-6">Default Probability</h3>
+                    
+                    <!-- Circular Radial Meter -->
+                    <div class="relative flex items-center justify-center">
+                        {% set risk_pct = (result.probability * 100) | round(1) %}
+                        
+                        <!-- Outer Track -->
+                        <svg class="w-40 h-40 transform -rotate-90">
+                            <circle cx="80" cy="80" r="70" class="stroke-slate-800" stroke-width="12" fill="transparent" />
+                            
+                            <!-- Glowing Colored Bar based on risk -->
+                            {% if result.risk_level == "Low Risk" %}
+                                {% set color_class = "stroke-emerald-500 shadow-emerald-500" %}
+                            {% elif result.risk_level == "Medium Risk" %}
+                                {% set color_class = "stroke-amber-500 shadow-amber-500" %}
+                            {% else %}
+                                {% set color_class = "stroke-rose-500 shadow-rose-500" %}
+                            {% endif %}
+                            
+                            <!-- Stroke-dasharray calculation: 2 * PI * r = 2 * 3.14159 * 70 = 439.82 -->
+                            <circle cx="80" cy="80" r="70" 
+                                class="{{ color_class }} transition-all duration-1000 ease-out" 
+                                stroke-width="12" 
+                                fill="transparent" 
+                                stroke-dasharray="440" 
+                                stroke-dashoffset="{{ 440 - (440 * result.probability) }}" 
+                                stroke-linecap="round" />
+                        </svg>
+                        
+                        <!-- Internal Risk Score Text -->
+                        <div class="absolute text-center">
+                            <span class="text-3xl font-extrabold text-white">{{ risk_pct }}%</span>
+                            <span class="block text-[10px] text-slate-500 uppercase font-bold tracking-wider mt-1">Default Risk</span>
+                        </div>
+                    </div>
+
+                    <!-- Risk Level Category Pill -->
+                    <div class="mt-6 text-center">
+                        {% if result.risk_level == "Low Risk" %}
+                            <span class="inline-flex items-center gap-1.5 py-1 px-4 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider">
+                                <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+                                {{ result.risk_level }}
+                            </span>
+                        {% elif result.risk_level == "Medium Risk" %}
+                            <span class="inline-flex items-center gap-1.5 py-1 px-4 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-semibold uppercase tracking-wider">
+                                <span class="h-2 w-2 rounded-full bg-amber-400"></span>
+                                {{ result.risk_level }}
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center gap-1.5 py-1 px-4 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs font-semibold uppercase tracking-wider">
+                                <span class="h-2 w-2 rounded-full bg-rose-400"></span>
+                                {{ result.risk_level }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Action Outcome Card -->
+                <div class="bg-slate-900/60 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+                    {% if result.prediction == 1 %}
+                        <!-- Denied Application Style -->
+                        <div class="absolute top-0 left-0 right-0 h-1 bg-rose-500"></div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="h-8 w-8 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <h4 class="font-bold text-white">Underwriting Decision: REJECT</h4>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            The applicant presents a high risk of loan default. It is recommended to reject the application or request a higher co-signer commitment / additional collateral.
+                        </p>
+                    {% else %}
+                        <!-- Approved Application Style -->
+                        <div class="absolute top-0 left-0 right-0 h-1 bg-emerald-500"></div>
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <h4 class="font-bold text-white">Underwriting Decision: APPROVE</h4>
+                        </div>
+                        <p class="text-sm text-slate-300 leading-relaxed">
+                            The applicant represents a low risk of loan default. Underwriting standards are satisfied. The application is eligible for automated processing.
+                        </p>
+                    {% endif %}
+                </div>
+
+            </div>
+
+            <!-- Right Side: SHAP Plot and Detailed Explanation -->
+            <div class="lg:col-span-2 flex flex-col gap-8">
+                
+                <!-- SHAP Plot Container -->
+                <div class="bg-slate-900/60 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                        <div>
+                            <h3 class="text-lg font-bold text-white">Local XAI Explanation (SHAP)</h3>
+                            <p class="text-xs text-slate-400">Waterfall visualization illustrating the contribution of key features to this specific credit risk prediction.</p>
+                        </div>
+                        <span class="py-1 px-2.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[10px] font-semibold tracking-wider uppercase shrink-0 self-start sm:self-center">
+                            Local Feature Impact
+                        </span>
+                    </div>
+
+                    <!-- Rendering the base64 encoded string OR a fallback if it is LR -->
+                    {% if result.shap_plot %}
+                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 flex items-center justify-center overflow-auto">
+                            <img src="data:image/png;base64,{{ result.shap_plot }}" alt="SHAP Explanation Waterfall Plot" class="max-w-full h-auto rounded-lg">
+                        </div>
+                        <div class="mt-4 p-3 rounded-lg bg-slate-950 border border-slate-900 text-xs text-slate-400 leading-relaxed">
+                            <span class="font-semibold text-slate-200">How to read:</span> Features in <span class="text-rose-400 font-semibold">pink/red</span> increase the predicted probability of loan default (adding to the risk score), while features in <span class="text-sky-400 font-semibold">blue</span> decrease the default probability (reducing risk). The baseline value represent average risk across all applicants, and the final value sums up local contributions to compute the specific applicant probability.
+                        </div>
+                    {% else %}
+                        <div class="flex flex-col items-center justify-center py-16 px-4 bg-slate-950 rounded-xl border border-slate-800/80 text-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <h4 class="text-sm font-semibold text-slate-300">SHAP Waterfall Plots Unavailble</h4>
+                            <p class="text-xs text-slate-500 max-w-sm mt-1.5 leading-relaxed">
+                                SHAP local visualizations are generated using the tree-based LightGBM model. The Logistic Regression baseline is linear and does not include structural TreeExplainer plots.
+                            </p>
+                            <a href="{{ url_for('index') }}" class="mt-5 inline-flex items-center justify-center py-2 px-4 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 text-xs text-slate-300 transition-all font-semibold">
+                                Try LightGBM Model
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Section: Submitted Applicant Parameters -->
+        <div class="bg-slate-900/60 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 to-indigo-500"></div>
+            <h3 class="text-lg font-bold text-white mb-6">Evaluated Applicant Parameters</h3>
+            
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-6">
+                <!-- Age -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Age</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.age }} years</span>
+                </div>
+                <!-- Income -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Annual Income</span>
+                    <span class="text-sm font-semibold text-white">${{ "{:,.2f}".format(inputs.income) }}</span>
+                </div>
+                <!-- Loan Amount -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Loan Amount</span>
+                    <span class="text-sm font-semibold text-white">${{ "{:,.2f}".format(inputs.loanamount) }}</span>
+                </div>
+                <!-- Credit Score -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Credit Score</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.creditscore }} (FICO)</span>
+                </div>
+                <!-- Months Employed -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Months Employed</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.monthsemployed }} months</span>
+                </div>
+                <!-- Open Credit Lines -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Credit Lines</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.numcreditlines }}</span>
+                </div>
+                <!-- Interest Rate -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Interest Rate</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.interestrate }}%</span>
+                </div>
+                <!-- Loan Term -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Loan Term</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.loanterm }} months</span>
+                </div>
+                <!-- DTI Ratio -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">DTI Ratio</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.dtiratio }}</span>
+                </div>
+                <!-- Education -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Education</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.education }}</span>
+                </div>
+                <!-- Employment Type -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Employment Type</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.employmenttype }}</span>
+                </div>
+                <!-- Marital Status -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Marital Status</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.maritalstatus }}</span>
+                </div>
+                <!-- Loan Purpose -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Loan Purpose</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.loanpurpose }}</span>
+                </div>
+                <!-- Has Mortgage -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Has Mortgage</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.hasmortgage }}</span>
+                </div>
+                <!-- Has Dependents -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Has Dependents</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.hasdependents }}</span>
+                </div>
+                <!-- Has Co-signer -->
+                <div class="space-y-1">
+                    <span class="text-xs text-slate-500 block">Has Co-signer</span>
+                    <span class="text-sm font-semibold text-white">{{ inputs.hascosigner }}</span>
+                </div>
+            </div>
+            
+            <div class="mt-8 flex items-center justify-between border-t border-slate-800/80 pt-6">
+                <a href="{{ url_for('index') }}" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1.5 transition-all">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Evaluate another applicant
+                </a>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto px-4">
+            <p>&copy; 2026 LendVerify Explainable AI Underwriting Suite. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

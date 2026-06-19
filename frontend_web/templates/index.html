@@ -74,7 +74,7 @@
         {% endwith %}
 
         <!-- Form Container -->
-        <form action="{{ url_for('result') }}" method="POST" class="space-y-8">
+        <form action="{{ url_for('result') }}" method="POST" class="space-y-8" autocomplete="off">
             
             <!-- Grid Layout for 3 sections -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -320,24 +320,31 @@
         </div>
     </footer>
 
-    <!-- Script to style select dropdowns like placeholders with dynamic coloring -->
+    <!-- Script to style select dropdowns like placeholders with dynamic coloring and reset form on reload -->
     <script>
-        document.querySelectorAll('select').forEach(select => {
-            const updateSelectColor = () => {
-                if (select.value === "") {
-                    select.classList.add('text-slate-500/40');
-                    select.classList.remove('text-slate-100');
-                } else {
-                    select.classList.remove('text-slate-500/40');
-                    select.classList.add('text-slate-100');
-                }
-            };
-            
-            // Initial call
-            updateSelectColor();
-            
-            // Listen for changes
-            select.addEventListener('change', updateSelectColor);
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.querySelector('form');
+            if (form) {
+                form.reset();
+            }
+
+            document.querySelectorAll('select').forEach(select => {
+                const updateSelectColor = () => {
+                    if (select.value === "") {
+                        select.classList.add('text-slate-500/40');
+                        select.classList.remove('text-slate-100');
+                    } else {
+                        select.classList.remove('text-slate-500/40');
+                        select.classList.add('text-slate-100');
+                    }
+                };
+                
+                // Initial call
+                updateSelectColor();
+                
+                // Listen for changes
+                select.addEventListener('change', updateSelectColor);
+            });
         });
     </script>
 </body>

@@ -113,14 +113,16 @@ async def predict_loan_default(
 
     # 3. Perform inference and explanation
     try:
-        prob, pred, risk_level, shap_plot = engine.predict_risk(features, model_type=model_type)
+        prob, pred, risk_level, shap_plot, lime_plot, text_explanation = engine.predict_risk(features, model_type=model_type)
         
         return LoanPredictResponse(
             probability=prob,
             prediction=pred,
             risk_level=risk_level,
             model_type=model_type,
-            shap_plot=shap_plot
+            shap_plot=shap_plot,
+            lime_plot=lime_plot,
+            text_explanation=text_explanation
         )
     except Exception as e:
         # Log the full error on the server

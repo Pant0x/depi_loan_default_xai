@@ -137,3 +137,5 @@ class LoanPredictResponse(BaseModel):
     risk_level: str = Field(..., description="Risk category: Low Risk, Medium Risk, High Risk")
     model_type: str = Field(..., description="Model used for prediction")
     shap_plot: Optional[str] = Field(None, description="Base64-encoded SHAP waterfall plot image (or None if unavailable/not calculated)")
+    lime_plot: Optional[str] = Field(None, description="Base64-encoded LIME local explanation plot image")
+    text_explanation: Optional[List[str]] = Field(None, description="Plain English bullet points explaining the decision")

@@ -5,6 +5,7 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 import shap
+import lime.lime_tabular
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -39,6 +40,7 @@ class XAIEngine:
         self.scaler = None
         self.feature_names = None
         self.shap_explainer = None
+        self.lime_explainer = None
         
         self.load_artifacts()
         self._initialized = True
@@ -74,7 +76,18 @@ class XAIEngine:
         # Initialize TreeExplainer on LightGBM model
         # Using check_additivity=False to prevent warning crashes during service operation
         self.shap_explainer = shap.TreeExplainer(self.lgb_model)
-        print("ML artifacts and SHAP explainer loaded successfully!")
+        
+        # Initialize LIME Tabular Explainer on synthetic background
+        print("Generating synthetic background data for LIME explainer...")
+        X_train_raw = self.generate_synthetic_background()
+        self.lime_explainer = lime.lime_tabular.LimeTabularExplainer(
+            training_data=X_train_raw.values,
+            feature_names=self.feature_names,
+            class_names=["No Default", "Default"],
+            mode="classification"
+        )
+        
+        print("ML artifacts, SHAP explainer, and LIME explainer loaded successfully!")
 
     def transform_to_dataframe(self, input_features: LoanFeatures) -> pd.DataFrame:
         """
@@ -246,11 +259,120 @@ class XAIEngine:
             print(f"Error generating SHAP explanation plot: {e}")
             return None
 
-    def predict_risk(self, input_features: LoanFeatures, model_type: str = "lightgbm") -> Tuple[float, int, str, Optional[str]]:
+    def generate_synthetic_background(self, n_samples=500) -> pd.DataFrame:
         """
-        Preprocesses inputs, performs risk probability prediction, and generates SHAP explanations.
+        Generates a realistic synthetic raw dataset within valid range constraints
+        and applies feature engineering to match the 36-feature space.
+        """
+        np.random.seed(42)
+        records = []
+        for _ in range(n_samples):
+            age = int(np.random.uniform(18, 75))
+            income = float(np.random.uniform(20000, 150000))
+            loanamount = float(np.random.uniform(5000, 100000))
+            creditscore = int(np.random.uniform(500, 820))
+            monthsemployed = int(np.random.uniform(0, 180))
+            numcreditlines = int(np.random.uniform(1, 15))
+            interestrate = float(np.random.uniform(4.0, 25.0))
+            loanterm = int(np.random.choice([12, 24, 36, 48, 60]))
+            dtiratio = float(np.random.uniform(0.05, 0.60))
+            
+            education = np.random.choice(["High School", "Bachelor's", "Master's", "PhD"])
+            employmenttype = np.random.choice(["Full-time", "Part-time", "Self-employed", "Unemployed"])
+            maritalstatus = np.random.choice(["Single", "Married", "Divorced"])
+            loanpurpose = np.random.choice(["Auto", "Business", "Education", "Home", "Other"])
+            
+            hasmortgage = np.random.choice(["Yes", "No"])
+            hasdependents = np.random.choice(["Yes", "No"])
+            hascosigner = np.random.choice(["Yes", "No"])
+            
+            f = LoanFeatures(
+                age=age, income=income, loanamount=loanamount, creditscore=creditscore,
+                monthsemployed=monthsemployed, numcreditlines=numcreditlines, interestrate=interestrate,
+                loanterm=loanterm, dtiratio=dtiratio, education=education, employmenttype=employmenttype,
+                maritalstatus=maritalstatus, loanpurpose=loanpurpose, hasmortgage=hasmortgage,
+                hasdependents=hasdependents, hascosigner=hascosigner
+            )
+            records.append(f)
+            
+        df_list = [self.transform_to_dataframe(r) for r in records]
+        return pd.concat(df_list, ignore_index=True)
+
+    def generate_lime_plot(self, df_raw: pd.DataFrame, model_type: str) -> Tuple[Optional[str], List[str]]:
+        """
+        Generates a local LIME explanation plot and returns its base64 encoding 
+        along with the top text reasons.
+        """
+        try:
+            # Predict function wrapper for LIME
+            def predict_fn(x):
+                df_x = pd.DataFrame(x, columns=self.feature_names)
+                if model_type == "logistic_regression":
+                    return self.lr_model.predict_proba(df_x)
+                else:
+                    df_x_scaled = self.scale_features(df_x)
+                    return self.lgb_model.predict_proba(df_x_scaled)
+
+            # Generate LIME explanation in raw space
+            exp = self.lime_explainer.explain_instance(
+                data_row=df_raw.iloc[0].values,
+                predict_fn=predict_fn,
+                num_features=10
+            )
+
+            # Format the top reasons (bullet points)
+            reasons = []
+            for cond, weight in exp.as_list()[:3]:
+                direction = "increased" if weight > 0 else "decreased"
+                # Use ascii conditions directly
+                reasons.append(f"Condition '{cond}' {direction} default risk by {abs(weight)*100:.1f}%")
+
+            # Draw LIME plot in headless mode
+            fig = exp.as_pyplot_figure()
+            plt.title(f"LIME Local Explanation ({'LightGBM' if model_type == 'lightgbm' else 'Logistic Regression'})", 
+                      fontsize=12, fontweight='bold', pad=15)
+            plt.tight_layout()
+
+            # Save plot to in-memory buffer
+            buf = io.BytesIO()
+            plt.savefig(buf, format='png', bbox_inches='tight', dpi=150)
+            plt.close(fig)
+
+            # Encode as base64
+            img_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
+            return img_b64, reasons
+        except Exception as e:
+            print(f"Error generating LIME explanation: {e}")
+            return None, []
+
+    def generate_shap_reasons(self, df_scaled: pd.DataFrame, top_n=3) -> List[str]:
+        """Generates plain English reasons based on SHAP values for LightGBM."""
+        try:
+            # Calculate SHAP values
+            shap_values = self.shap_explainer.shap_values(df_scaled)
+            if isinstance(shap_values, list):
+                shap_values = shap_values[1]
+            
+            row_shap = shap_values[0]
+            pairs = list(zip(self.feature_names, row_shap))
+            pairs_sorted = sorted(pairs, key=lambda x: abs(x[1]), reverse=True)[:top_n]
+            
+            reasons = []
+            for feature, value in pairs_sorted:
+                friendly_name = feature.replace("_", " ").title()
+                direction = "increased" if value > 0 else "decreased"
+                reasons.append(f"{friendly_name} {direction} the default risk (impact: {value:+.3f})")
+            return reasons
+        except Exception as e:
+            print(f"Error generating SHAP text explanation: {e}")
+            return []
+
+    def predict_risk(self, input_features: LoanFeatures, model_type: str = "lightgbm") -> Tuple[float, int, str, Optional[str], Optional[str], List[str]]:
+        """
+        Preprocesses inputs, performs risk probability prediction, and generates SHAP and LIME explanations.
         Returns:
-            probability (float), prediction (int), risk_level (str), shap_plot_b64 (str or None)
+            probability (float), prediction (int), risk_level (str), 
+            shap_plot_b64 (str or None), lime_plot_b64 (str or None), text_explanation (List[str])
         """
         # 1. Transform raw inputs to dataframe with engineered features
         df_raw = self.transform_to_dataframe(input_features)
@@ -263,12 +385,19 @@ class XAIEngine:
             # Logistic Regression Pipeline has the scaler step inside it.
             # We must pass the raw features df_raw to prevent double-scaling!
             prob = float(self.lr_model.predict_proba(df_raw)[0, 1])
-            shap_plot_b64 = None  # TreeExplainer is only compatible with LightGBM in our setup
+            shap_plot_b64 = None
+            lime_plot_b64, text_explanation = self.generate_lime_plot(df_raw, model_type)
         else:
             # LightGBM requires scaled features input
             prob = float(self.lgb_model.predict_proba(df_scaled)[0, 1])
             # Generate SHAP waterfall plot
             shap_plot_b64 = self.generate_shap_plot(df_raw, df_scaled)
+            # Generate LIME plot
+            lime_plot_b64, lime_reasons = self.generate_lime_plot(df_raw, model_type)
+            # Generate SHAP-based human-readable explanation
+            text_explanation = self.generate_shap_reasons(df_scaled)
+            if not text_explanation:
+                text_explanation = lime_reasons
 
         # Calculate prediction binary flag (0.5 threshold)
         prediction = 1 if prob >= 0.5 else 0
@@ -281,4 +410,4 @@ class XAIEngine:
         else:
             risk_level = "High Risk"
 
-        return prob, prediction, risk_level, shap_plot_b64
+        return prob, prediction, risk_level, shap_plot_b64, lime_plot_b64, text_explanation

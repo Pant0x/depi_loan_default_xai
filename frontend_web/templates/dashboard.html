@@ -144,46 +144,100 @@
                     {% endif %}
                 </div>
 
+                <!-- Plain English Explanation Card -->
+                {% if result.text_explanation %}
+                <div class="bg-slate-900/60 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
+                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="h-8 w-8 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center shrink-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                        </div>
+                        <h4 class="font-bold text-white">Top Risk Drivers</h4>
+                    </div>
+                    <ul class="space-y-3 text-sm text-slate-300">
+                        {% for reason in result.text_explanation %}
+                            <li class="flex items-start gap-2.5">
+                                <span class="h-1.5 w-1.5 rounded-full bg-indigo-400 mt-2 shrink-0"></span>
+                                <span>{{ reason }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
             </div>
 
             <!-- Right Side: SHAP Plot and Detailed Explanation -->
             <div class="lg:col-span-2 flex flex-col gap-8">
                 
-                <!-- SHAP Plot Container -->
+                <!-- Dual XAI Explanation Container (SHAP & LIME) -->
                 <div class="bg-slate-900/60 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col relative overflow-hidden">
                     <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                    
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                         <div>
-                            <h3 class="text-lg font-bold text-white">Local XAI Explanation (SHAP)</h3>
-                            <p class="text-xs text-slate-400">Waterfall visualization illustrating the contribution of key features to this specific credit risk prediction.</p>
+                            <h3 class="text-lg font-bold text-white">Explainable AI (XAI) Suite</h3>
+                            <p class="text-xs text-slate-400">Interpret predictions locally using SHAP (feature contributions) and LIME (local surrogacy rules).</p>
                         </div>
-                        <span class="py-1 px-2.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-[10px] font-semibold tracking-wider uppercase shrink-0 self-start sm:self-center">
-                            Local Feature Impact
-                        </span>
+                        
+                        <!-- Tabs Navigation -->
+                        <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 shrink-0 self-start sm:self-center">
+                            <button id="tab-shap" onclick="switchXaiTab('shap')" 
+                                class="py-1.5 px-3 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition-all">
+                                SHAP Waterfall
+                            </button>
+                            <button id="tab-lime" onclick="switchXaiTab('lime')" 
+                                class="py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all">
+                                LIME Surrogate
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- Rendering the base64 encoded string OR a fallback if it is LR -->
-                    {% if result.shap_plot %}
-                        <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 flex items-center justify-center overflow-auto">
-                            <img src="data:image/png;base64,{{ result.shap_plot }}" alt="SHAP Explanation Waterfall Plot" class="max-w-full h-auto rounded-lg">
-                        </div>
-                        <div class="mt-4 p-3 rounded-lg bg-slate-950 border border-slate-900 text-xs text-slate-400 leading-relaxed">
-                            <span class="font-semibold text-slate-200">How to read:</span> Features in <span class="text-rose-400 font-semibold">pink/red</span> increase the predicted probability of loan default (adding to the risk score), while features in <span class="text-sky-400 font-semibold">blue</span> decrease the default probability (reducing risk). The baseline value represent average risk across all applicants, and the final value sums up local contributions to compute the specific applicant probability.
-                        </div>
-                    {% else %}
-                        <div class="flex flex-col items-center justify-center py-16 px-4 bg-slate-950 rounded-xl border border-slate-800/80 text-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
-                            <h4 class="text-sm font-semibold text-slate-300">SHAP Waterfall Plots Unavailble</h4>
-                            <p class="text-xs text-slate-500 max-w-sm mt-1.5 leading-relaxed">
-                                SHAP local visualizations are generated using the tree-based LightGBM model. The Logistic Regression baseline is linear and does not include structural TreeExplainer plots.
-                            </p>
-                            <a href="{{ url_for('index') }}" class="mt-5 inline-flex items-center justify-center py-2 px-4 rounded-lg bg-slate-900 border border-slate-800 hover:bg-slate-800 text-xs text-slate-300 transition-all font-semibold">
-                                Try LightGBM Model
-                            </a>
-                        </div>
-                    {% endif %}
+                    <!-- SHAP Tab Content -->
+                    <div id="content-shap" class="space-y-4">
+                        {% if result.shap_plot %}
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 flex items-center justify-center overflow-auto">
+                                <img src="data:image/png;base64,{{ result.shap_plot }}" alt="SHAP Explanation Waterfall Plot" class="max-w-full h-auto rounded-lg">
+                            </div>
+                            <div class="p-3 rounded-lg bg-slate-950 border border-slate-900 text-xs text-slate-400 leading-relaxed">
+                                <span class="font-semibold text-slate-200">SHAP Waterfall Interpretation:</span> Features in <span class="text-rose-400 font-semibold">pink/red</span> increase the predicted probability of loan default (adding to the risk score), while features in <span class="text-sky-400 font-semibold">blue</span> decrease the default probability (reducing risk). The baseline value represent average risk across all applicants, and the final value sums up local contributions to compute the specific applicant probability.
+                            </div>
+                        {% else %}
+                            <div class="flex flex-col items-center justify-center py-16 px-4 bg-slate-950 rounded-xl border border-slate-800/80 text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-11 w-11 text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <h4 class="text-sm font-semibold text-slate-300">SHAP Waterfall Plot Unavailable</h4>
+                                <p class="text-xs text-slate-500 max-w-sm mt-1.5 leading-relaxed">
+                                    SHAP local visualizations are generated using the tree-based LightGBM model. The Logistic Regression baseline is linear and does not include structural TreeExplainer plots.
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- LIME Tab Content -->
+                    <div id="content-lime" class="hidden space-y-4">
+                        {% if result.lime_plot %}
+                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 flex items-center justify-center overflow-auto">
+                                <img src="data:image/png;base64,{{ result.lime_plot }}" alt="LIME Local Explanation Plot" class="max-w-full h-auto rounded-lg">
+                            </div>
+                            <div class="p-3 rounded-lg bg-slate-950 border border-slate-900 text-xs text-slate-400 leading-relaxed">
+                                <span class="font-semibold text-slate-200">LIME Surrogacy Interpretation:</span> A local surrogate model is trained to explain the decision in the immediate neighborhood of this applicant. Features on the **right (positive)** push the classification towards defaulting, whereas features on the **left (negative)** support approval. LIME acts as a second, independent opinion to confirm SHAP's findings.
+                            </div>
+                        {% else %}
+                            <div class="flex flex-col items-center justify-center py-16 px-4 bg-slate-950 rounded-xl border border-slate-800/80 text-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-11 w-11 text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <h4 class="text-sm font-semibold text-slate-300">LIME Explanation Plot Unavailable</h4>
+                                <p class="text-xs text-slate-500 max-w-sm mt-1.5 leading-relaxed">
+                                    LIME explanation plots are generated on-the-fly. Ensure that the required libraries are installed on the server backend.
+                                </p>
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
 
             </div>
@@ -296,5 +350,30 @@
         </div>
     </footer>
 
+    <!-- Script to toggle between SHAP and LIME tabs -->
+    <script>
+        function switchXaiTab(tab) {
+            const tabShap = document.getElementById('tab-shap');
+            const tabLime = document.getElementById('tab-lime');
+            const contentShap = document.getElementById('content-shap');
+            const contentLime = document.getElementById('content-lime');
+
+            if (tab === 'shap') {
+                tabShap.classList.add('bg-indigo-600', 'text-white');
+                tabShap.classList.remove('text-slate-400', 'hover:text-slate-200');
+                tabLime.classList.remove('bg-indigo-600', 'text-white');
+                tabLime.classList.add('text-slate-400', 'hover:text-slate-200');
+                contentShap.classList.remove('hidden');
+                contentLime.classList.add('hidden');
+            } else {
+                tabLime.classList.add('bg-indigo-600', 'text-white');
+                tabLime.classList.remove('text-slate-400', 'hover:text-slate-200');
+                tabShap.classList.remove('bg-indigo-600', 'text-white');
+                tabShap.classList.add('text-slate-400', 'hover:text-slate-200');
+                contentLime.classList.remove('hidden');
+                contentShap.classList.add('hidden');
+            }
+        }
+    </script>
 </body>
 </html>

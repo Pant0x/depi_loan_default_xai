@@ -37,12 +37,17 @@ def run_test():
     
     print("\n--- Testing LightGBM Model ---")
     try:
-        prob, pred, risk_level, shap_plot = engine.predict_risk(sample, model_type="lightgbm")
+        prob, pred, risk_level, shap_plot, lime_plot, text_exp = engine.predict_risk(sample, model_type="lightgbm")
         print(f"Result: Probability={prob:.5f}, Prediction={pred}, Risk={risk_level}")
         if shap_plot:
             print(f"Success! SHAP Plot generated. Base64 length: {len(shap_plot)}")
         else:
             print("WARNING: SHAP Plot was not generated.")
+        if lime_plot:
+            print(f"Success! LIME Plot generated. Base64 length: {len(lime_plot)}")
+        else:
+            print("WARNING: LIME Plot was not generated.")
+        print(f"Text explanation: {text_exp}")
     except Exception as e:
         print(f"FAILED LightGBM test: {e}")
         import traceback
@@ -51,12 +56,17 @@ def run_test():
 
     print("\n--- Testing Logistic Regression Model ---")
     try:
-        prob, pred, risk_level, shap_plot = engine.predict_risk(sample, model_type="logistic_regression")
+        prob, pred, risk_level, shap_plot, lime_plot, text_exp = engine.predict_risk(sample, model_type="logistic_regression")
         print(f"Result: Probability={prob:.5f}, Prediction={pred}, Risk={risk_level}")
         if shap_plot is None:
             print("Success! Logistic Regression skipped SHAP plot generation as expected.")
         else:
             print(f"WARNING: Logistic Regression unexpectedly returned a SHAP plot: {len(shap_plot)} chars.")
+        if lime_plot:
+            print(f"Success! LIME Plot generated for Logistic Regression. Base64 length: {len(lime_plot)}")
+        else:
+            print("WARNING: LIME Plot was not generated for Logistic Regression.")
+        print(f"Text explanation: {text_exp}")
     except Exception as e:
         print(f"FAILED Logistic Regression test: {e}")
         import traceback

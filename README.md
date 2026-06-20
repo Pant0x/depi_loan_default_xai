@@ -36,7 +36,7 @@ loan-default-xai/
 │   ├── artifacts/
 │   │   ├── feature_names.pkl                 # Exact 36 feature names list
 │   │   ├── scaler.pkl                        # Fitted StandardScaler object
-│   │   ├── lightgbm_tuned_model.joblib       # Tuned LightGBM classifier
+│   │   ├── lightgbm_model (1).joblib       # LightGBM classifier
 │   │   └── logistic_regression_pipeline.joblib # Baseline pipeline (scaler + classifier)
 │   ├── requirements.txt     # Backend python dependencies
 │   └── test_inference.py    # Automated integration test script

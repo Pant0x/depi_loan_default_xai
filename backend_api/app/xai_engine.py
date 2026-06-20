@@ -47,7 +47,7 @@ class XAIEngine:
         """Load all ML models, scalers, and feature metadata in a thread-safe manner."""
         print(f"Loading ML artifacts from {self.artifacts_dir}...")
         
-        lgb_path = self.artifacts_dir / "lightgbm_tuned_model.joblib"
+        lgb_path = self.artifacts_dir / "lightgbm_model (1).joblib"
         lr_path = self.artifacts_dir / "logistic_regression_pipeline.joblib"
         scaler_path = self.artifacts_dir / "scaler.pkl"
         feature_names_path = self.artifacts_dir / "feature_names.pkl"

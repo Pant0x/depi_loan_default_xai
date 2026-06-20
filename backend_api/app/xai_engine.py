@@ -36,10 +36,11 @@ class XAIEngine:
             self.artifacts_dir = Path(artifacts_dir)
 
         self.lgb_model = None
-        self.lr_model = None
+        self.xgb_model = None
         self.scaler = None
         self.feature_names = None
         self.shap_explainer = None
+        self.xgb_shap_explainer = None
         self.lime_explainer = None
         
         self.load_artifacts()
@@ -50,14 +51,14 @@ class XAIEngine:
         print(f"Loading ML artifacts from {self.artifacts_dir}...")
         
         lgb_path = self.artifacts_dir / "lightgbm_model (1).joblib"
-        lr_path = self.artifacts_dir / "logistic_regression_pipeline.joblib"
+        xgb_path = self.artifacts_dir / "xgboost_model (1).joblib"
         scaler_path = self.artifacts_dir / "scaler.pkl"
         feature_names_path = self.artifacts_dir / "feature_names.pkl"
 
         if not lgb_path.exists():
             raise FileNotFoundError(f"LightGBM model not found at {lgb_path}")
-        if not lr_path.exists():
-            raise FileNotFoundError(f"Logistic Regression model not found at {lr_path}")
+        if not xgb_path.exists():
+            raise FileNotFoundError(f"XGBoost model not found at {xgb_path}")
         if not scaler_path.exists():
             raise FileNotFoundError(f"Scaler not found at {scaler_path}")
         if not feature_names_path.exists():
@@ -65,7 +66,7 @@ class XAIEngine:
 
         # Load models
         self.lgb_model = joblib.load(lgb_path)
-        self.lr_model = joblib.load(lr_path)
+        self.xgb_model = joblib.load(xgb_path)
         
         # Load scaler and feature names
         with open(scaler_path, "rb") as f:
@@ -73,9 +74,10 @@ class XAIEngine:
         with open(feature_names_path, "rb") as f:
             self.feature_names = pickle.load(f)
 
-        # Initialize TreeExplainer on LightGBM model
+        # Initialize TreeExplainers on models
         # Using check_additivity=False to prevent warning crashes during service operation
         self.shap_explainer = shap.TreeExplainer(self.lgb_model)
+        self.xgb_shap_explainer = shap.TreeExplainer(self.xgb_model)
         
         # Initialize LIME Tabular Explainer on synthetic background
         print("Generating synthetic background data for LIME explainer...")
@@ -225,14 +227,17 @@ class XAIEngine:
         scaled_df = pd.DataFrame(scaled_data, columns=self.feature_names)
         return scaled_df
 
-    def generate_shap_plot(self, df_raw: pd.DataFrame, df_scaled: pd.DataFrame) -> Optional[str]:
+    def generate_shap_plot(self, df_raw: pd.DataFrame, df_scaled: pd.DataFrame, model_type: str = "lightgbm") -> Optional[str]:
         """
         Generates a local SHAP waterfall plot for a single prediction using TreeExplainer
         and encodes it as a base64 string.
         """
         try:
+            # Select correct explainer
+            explainer = self.xgb_shap_explainer if model_type == "xgboost" else self.shap_explainer
+            
             # Generate SHAP values for the scaled input row
-            shap_values = self.shap_explainer(df_scaled)
+            shap_values = explainer(df_scaled)
             
             # Construct a clean Explanation object using the raw (unscaled) data for plotting
             # so the labels show real-world values (e.g., age = 35) instead of Z-scores.
@@ -307,10 +312,10 @@ class XAIEngine:
             # Predict function wrapper for LIME
             def predict_fn(x):
                 df_x = pd.DataFrame(x, columns=self.feature_names)
-                if model_type == "logistic_regression":
-                    return self.lr_model.predict_proba(df_x)
+                df_x_scaled = self.scale_features(df_x)
+                if model_type == "xgboost":
+                    return self.xgb_model.predict_proba(df_x_scaled)
                 else:
-                    df_x_scaled = self.scale_features(df_x)
                     return self.lgb_model.predict_proba(df_x_scaled)
 
             # Generate LIME explanation in raw space
@@ -329,7 +334,7 @@ class XAIEngine:
 
             # Draw LIME plot in headless mode
             fig = exp.as_pyplot_figure()
-            plt.title(f"LIME Local Explanation ({'LightGBM' if model_type == 'lightgbm' else 'Logistic Regression'})", 
+            plt.title(f"LIME Local Explanation ({'XGBoost' if model_type == 'xgboost' else 'LightGBM'})", 
                       fontsize=12, fontweight='bold', pad=15)
             plt.tight_layout()
 
@@ -345,11 +350,14 @@ class XAIEngine:
             print(f"Error generating LIME explanation: {e}")
             return None, []
 
-    def generate_shap_reasons(self, df_scaled: pd.DataFrame, top_n=3) -> List[str]:
-        """Generates plain English reasons based on SHAP values for LightGBM."""
+    def generate_shap_reasons(self, df_scaled: pd.DataFrame, model_type: str = "lightgbm", top_n=3) -> List[str]:
+        """Generates plain English reasons based on SHAP values."""
         try:
+            # Select the correct explainer
+            explainer = self.xgb_shap_explainer if model_type == "xgboost" else self.shap_explainer
+            
             # Calculate SHAP values
-            shap_values = self.shap_explainer.shap_values(df_scaled)
+            shap_values = explainer.shap_values(df_scaled)
             if isinstance(shap_values, list):
                 shap_values = shap_values[1]
             
@@ -381,23 +389,22 @@ class XAIEngine:
         df_scaled = self.scale_features(df_raw)
 
         # 3. Model inference based on selected type
-        if model_type == "logistic_regression":
-            # Logistic Regression Pipeline has the scaler step inside it.
-            # We must pass the raw features df_raw to prevent double-scaling!
-            prob = float(self.lr_model.predict_proba(df_raw)[0, 1])
-            shap_plot_b64 = None
-            lime_plot_b64, text_explanation = self.generate_lime_plot(df_raw, model_type)
+        if model_type == "xgboost":
+            prob = float(self.xgb_model.predict_proba(df_scaled)[0, 1])
         else:
             # LightGBM requires scaled features input
             prob = float(self.lgb_model.predict_proba(df_scaled)[0, 1])
-            # Generate SHAP waterfall plot
-            shap_plot_b64 = self.generate_shap_plot(df_raw, df_scaled)
-            # Generate LIME plot
-            lime_plot_b64, lime_reasons = self.generate_lime_plot(df_raw, model_type)
-            # Generate SHAP-based human-readable explanation
-            text_explanation = self.generate_shap_reasons(df_scaled)
-            if not text_explanation:
-                text_explanation = lime_reasons
+
+        # Generate SHAP waterfall plot
+        shap_plot_b64 = self.generate_shap_plot(df_raw, df_scaled, model_type)
+        
+        # Generate LIME plot
+        lime_plot_b64, lime_reasons = self.generate_lime_plot(df_raw, model_type)
+        
+        # Generate SHAP-based human-readable explanation
+        text_explanation = self.generate_shap_reasons(df_scaled, model_type)
+        if not text_explanation:
+            text_explanation = lime_reasons
 
         # Calculate prediction binary flag (0.5 threshold)
         prediction = 1 if prob >= 0.5 else 0

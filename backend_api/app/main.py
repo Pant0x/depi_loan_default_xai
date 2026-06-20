@@ -70,7 +70,7 @@ app.add_middleware(
 def health_check():
     """Simple API healthcheck."""
     global engine
-    if engine is None or engine.lgb_model is None or engine.lr_model is None:
+    if engine is None or engine.lgb_model is None or engine.xgb_model is None:
         return {"status": "unhealthy", "message": "ML models not loaded"}
     return {"status": "healthy", "message": "API and ML models are fully operational"}
 
@@ -84,7 +84,7 @@ async def predict_loan_default(
     features: LoanFeatures,
     model_type: str = Query(
         "lightgbm",
-        description="ML model to use for inference ('lightgbm' or 'logistic_regression')"
+        description="ML model to use for inference ('lightgbm' or 'xgboost')"
     )
 ):
     """
@@ -105,10 +105,10 @@ async def predict_loan_default(
 
     # 2. Validate model type
     model_type = model_type.lower().strip()
-    if model_type not in ["lightgbm", "logistic_regression"]:
+    if model_type not in ["lightgbm", "xgboost"]:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid model_type. Choose either 'lightgbm' or 'logistic_regression'."
+            detail="Invalid model_type. Choose either 'lightgbm' or 'xgboost'."
         )
 
     # 3. Perform inference and explanation

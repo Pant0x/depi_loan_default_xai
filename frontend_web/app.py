@@ -79,10 +79,10 @@ def index():
 def signup():
     """Handles User Registration."""
     username = request.form.get("username", "").strip()
-    password = request.form.get("password", "")
+    email = request.form.get("email", "").strip()
     
-    if len(username) < 3 or len(password) < 6:
-        flash("Username must be 3+ chars and password 6+ chars.", "danger")
+    if len(username) < 3 or len(email) < 5 or "@" not in email:
+        flash("Username must be 3+ chars and a valid email is required.", "danger")
         return redirect(url_for("index"))
 
     # 1. Check if user already exists
@@ -91,14 +91,10 @@ def signup():
         flash("Username already exists. Please log in instead.", "warning")
         return redirect(url_for("index"))
 
-    # 2. Insert new user (Note: we use a dummy email since we dropped it from UI to simplify, or you can add it back)
-    # We hash the password for security.
-    pw_hash = generate_password_hash(password)
-    
+    # 2. Insert new user with email instead of password hash
     insert_data = {
         "username": username,
-        "email": f"{username}@lendverify.local", # placeholder
-        "password_hash": pw_hash
+        "email": email
     }
     
     insert_resp = supabase_request("POST", "logins", json_data=insert_data)
@@ -110,30 +106,30 @@ def signup():
     else:
         # Fallback for dev/missing column
         print(f"Supabase error: {insert_resp.text if insert_resp else 'None'}")
-        flash("Database configuration required: Missing 'password_hash' column in Supabase.", "danger")
+        flash("Database configuration required: Missing 'email' column in Supabase.", "danger")
         return redirect(url_for("index"))
 
 @app.route("/login", methods=["POST"])
 def login():
     """Handles User Login."""
     username = request.form.get("username", "").strip()
-    password = request.form.get("password", "")
+    email = request.form.get("email", "").strip()
 
     # Query Supabase for the user
-    resp = supabase_request("GET", "logins", params={"username": f"eq.{username}", "select": "username,password_hash"})
+    resp = supabase_request("GET", "logins", params={"username": f"eq.{username}", "select": "username,email"})
     
     if resp and resp.status_code == 200:
         data = resp.json()
         if len(data) == 1:
             user_record = data[0]
-            # Verify password hash
-            stored_hash = user_record.get("password_hash")
-            if stored_hash and check_password_hash(stored_hash, password):
+            # Verify email
+            stored_email = user_record.get("email")
+            if stored_email and stored_email.lower() == email.lower():
                 session["user"] = username
                 flash("Authentication successful.", "success")
                 return redirect(url_for("app_dashboard"))
             else:
-                flash("Invalid password.", "danger")
+                flash("Invalid email for this username.", "danger")
                 return redirect(url_for("index"))
         else:
             flash("User not found.", "danger")

@@ -109,7 +109,7 @@ def signup():
         return redirect(url_for("app_dashboard"))
     else:
         # Fallback for dev/missing column
-        error_msg = insert_resp.text if insert_resp else 'None'
+        error_msg = insert_resp.text if insert_resp is not None else 'None'
         print(f"Supabase error: {error_msg}")
         flash(f"Database error: {error_msg}", "danger")
         return redirect(url_for("index"))

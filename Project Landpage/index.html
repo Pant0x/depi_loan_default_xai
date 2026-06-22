@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOAN XAI SYSTEM - Explainable AI Portal</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Glow Elements -->
+    <div class="glow-sphere glow-sphere-1"></div>
+    <div class="glow-sphere glow-sphere-2"></div>
+
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <span class="logo-text">LOAN XAI SYSTEM</span>
+            </div>
+            <div class="nav-status">
+                <span class="pulse-indicator"></span>
+                <span class="status-text">Production Gateway</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="main-layout">
+        <div class="split-container">
+            
+            <!-- Left Panel: Summary & Team -->
+            <section class="left-panel">
+                <div class="hero-header">
+                    <h1 class="main-title">LOAN XAI SYSTEM</h1>
+                    <p class="subtitle">Explainable Credit Underwriting & Machine Learning Risk Interpretability</p>
+                </div>
+
+                <div class="project-summary-card">
+                    <h2 class="section-title">Project Summary</h2>
+                    <p class="summary-paragraph">
+                        An advanced, production-ready Explainable AI (XAI) suite designed to evaluate loan applicant default risks. By integrating transparent machine learning pipelines with local interpretability frameworks, this platform provides loan underwriters and applicants with clear, mathematically validated credit decisions.
+                    </p>
+                    <ul class="feature-list">
+                        <li>
+                            <span class="feature-icon">⚡</span>
+                            <div>
+                                <strong>Dual-Model Architecture:</strong> Utilizes high-performance LightGBM and scale-invariant XGBoost models for robust inference.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="feature-icon">📊</span>
+                            <div>
+                                <strong>Interactive SHAP Explanations:</strong> Generates real-time SHAP waterfall charts showing how each individual feature pushes default probability up or down.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="feature-icon">🎯</span>
+                            <div>
+                                <strong>LIME Local Surrogacy:</strong> Fits dynamic surrogate models locally around applicant profiles to cross-examine and corroborate prediction confidence.
+                            </div>
+                        </li>
+                    </ul>
+
+                    <button id="btn-extra-info" class="btn-primary-glow">
+                        Explore System Architecture
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Team Directory -->
+                <div class="team-section">
+                    <h2 class="section-title">Project Development Team</h2>
+                    <div class="team-grid">
+                        
+                        <!-- Member 1 -->
+                        <div class="team-card">
+                            <div class="member-avatar">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </div>
+                            <h3 class="member-name">Alex Morgan</h3>
+                            <p class="member-role">ML Engineer</p>
+                            <div class="member-links">
+                                <a href="https://linkedin.com" target="_blank" title="LinkedIn"><span class="link-icon">in</span></a>
+                                <a href="https://github.com" target="_blank" title="GitHub"><span class="link-icon">git</span></a>
+                                <a href="mailto:alex@example.com" title="Email"><span class="link-icon">@</span></a>
+                            </div>
+                        </div>
+
+                        <!-- Member 2 -->
+                        <div class="team-card">
+                            <div class="member-avatar">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </div>
+                            <h3 class="member-name">Jordan Taylor</h3>
+                            <p class="member-role">Full-Stack Dev</p>
+                            <div class="member-links">
+                                <a href="https://linkedin.com" target="_blank" title="LinkedIn"><span class="link-icon">in</span></a>
+                                <a href="https://github.com" target="_blank" title="GitHub"><span class="link-icon">git</span></a>
+                                <a href="mailto:jordan@example.com" title="Email"><span class="link-icon">@</span></a>
+                            </div>
+                        </div>
+
+                        <!-- Member 3 -->
+                        <div class="team-card">
+                            <div class="member-avatar">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </div>
+                            <h3 class="member-name">Casey Reese</h3>
+                            <p class="member-role">UI/UX Designer</p>
+                            <div class="member-links">
+                                <a href="https://linkedin.com" target="_blank" title="LinkedIn"><span class="link-icon">in</span></a>
+                                <a href="https://github.com" target="_blank" title="GitHub"><span class="link-icon">git</span></a>
+                                <a href="mailto:casey@example.com" title="Email"><span class="link-icon">@</span></a>
+                            </div>
+                        </div>
+
+                        <!-- Member 4 -->
+                        <div class="team-card">
+                            <div class="member-avatar">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </div>
+                            <h3 class="member-name">Taylor Vance</h3>
+                            <p class="member-role">Data Analyst</p>
+                            <div class="member-links">
+                                <a href="https://linkedin.com" target="_blank" title="LinkedIn"><span class="link-icon">in</span></a>
+                                <a href="https://github.com" target="_blank" title="GitHub"><span class="link-icon">git</span></a>
+                                <a href="mailto:taylor@example.com" title="Email"><span class="link-icon">@</span></a>
+                            </div>
+                        </div>
+
+                        <!-- Member 5 -->
+                        <div class="team-card">
+                            <div class="member-avatar">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </div>
+                            <h3 class="member-name">Morgan Drew</h3>
+                            <p class="member-role">DevOps Engineer</p>
+                            <div class="member-links">
+                                <a href="https://linkedin.com" target="_blank" title="LinkedIn"><span class="link-icon">in</span></a>
+                                <a href="https://github.com" target="_blank" title="GitHub"><span class="link-icon">git</span></a>
+                                <a href="mailto:morgan@example.com" title="Email"><span class="link-icon">@</span></a>
+                            </div>
+                        </div>
+
+                        <!-- Member 6 -->
+                        <div class="team-card">
+                            <div class="member-avatar">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </div>
+                            <h3 class="member-name">Riley Blake</h3>
+                            <p class="member-role">Project Manager</p>
+                            <div class="member-links">
+                                <a href="https://linkedin.com" target="_blank" title="LinkedIn"><span class="link-icon">in</span></a>
+                                <a href="https://github.com" target="_blank" title="GitHub"><span class="link-icon">git</span></a>
+                                <a href="mailto:riley@example.com" title="Email"><span class="link-icon">@</span></a>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Login Card -->
+            <section class="right-panel">
+                <div class="login-card">
+                    <div class="login-card-header">
+                        <h2 class="login-title">Access Gateway</h2>
+                        <p class="login-subtitle">Enter credentials to log in and connect to the underwriting workspace.</p>
+                    </div>
+
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" id="username" class="form-input" placeholder="e.g. loan_officer_45" autocomplete="off" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" id="email" class="form-input" placeholder="e.g. officer@lendverify.com" autocomplete="off" required>
+                        </div>
+
+                        <div class="supabase-status-info">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <span>Credentials secured via Supabase DB</span>
+                        </div>
+
+                        <button type="submit" id="btn-submit" class="btn-submit" disabled>
+                            <span class="btn-text">Enter Suite</span>
+                            <span class="spinner hidden"></span>
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Overlay Modal for Extra Info -->
+    <div id="modal-extra-info" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 class="modal-title">System & XAI Architecture</h3>
+                <button id="btn-close-modal" class="btn-close">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <section class="modal-section">
+                    <h4>Explainable AI (XAI) Pipelines</h4>
+                    <p>The core innovation of the LOAN XAI SYSTEM is its transparency. Traditional credit scoring models operate as "black boxes," leaving applicants and loan officers in the dark regarding rejection reasons. This suite implements two levels of explanatory outputs:</p>
+                    <ul>
+                        <li><strong>SHAP (SHapley Additive exPlanations):</strong> Based on cooperative game theory, SHAP allocates an importance value (Shapley value) to each feature for every specific prediction. It details how the applicant's parameters (e.g. high DTI ratio or low Credit Score) mathematically shifted the model's final risk percentage relative to a baseline training average.</li>
+                        <li><strong>LIME (Local Interpretable Model-agnostic Explanations):</strong> LIME perturbs the applicant's input features to create a synthetic neighborhood, queries the model to see how predictions change, and fits a simple, interpretable linear surrogate model locally. This provides an independent validation of feature sensitivity.</li>
+                    </ul>
+                </section>
+                
+                <section class="modal-section">
+                    <h4>Technical Stack</h4>
+                    <p>The system is built as a stateless, decoupled multi-service application:</p>
+                    <ul>
+                        <li><strong>Backend API (FastAPI):</strong> Handles high-performance ML inference, feature scaling/engineering, and triggers matplotlib and SHAP visualization engines on-demand.</li>
+                        <li><strong>Frontend Workspace (Flask):</strong> A sleek, dashboard interface displaying default probability radial meters and full-scale waterfall charts.</li>
+                        <li><strong>Database Integration (Supabase):</strong> Logs secure portal admissions to verify team member registrations and auditor check-ins.</li>
+                    </ul>
+                </section>
+            </div>
+            <div class="modal-footer">
+                <button id="btn-modal-ok" class="btn-modal-primary">Understood</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supabase JS Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>
+    <!-- Application Logic -->
+    <script src="app.js"></script>
+</body>
+</html>

@@ -105,8 +105,9 @@ def signup():
         return redirect(url_for("app_dashboard"))
     else:
         # Fallback for dev/missing column
-        print(f"Supabase error: {insert_resp.text if insert_resp else 'None'}")
-        flash("Database configuration required: Missing 'email' column in Supabase.", "danger")
+        error_msg = insert_resp.text if insert_resp else 'None'
+        print(f"Supabase error: {error_msg}")
+        flash(f"Database error: {error_msg}", "danger")
         return redirect(url_for("index"))
 
 @app.route("/login", methods=["POST"])

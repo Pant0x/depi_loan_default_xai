@@ -81,8 +81,10 @@ def signup():
     username = request.form.get("username", "").strip()
     email = request.form.get("email", "").strip()
     
-    if len(username) < 3 or len(email) < 5 or "@" not in email:
-        flash("Username must be 3+ chars and a valid email is required.", "danger")
+    # Validate email has standard domain indicators like gmail or .com
+    email_lower = email.lower()
+    if len(username) < 3 or "@" not in email_lower or ("gmail" not in email_lower and ".com" not in email_lower):
+        flash("Username must be 3+ chars and you must provide a valid email (e.g. @gmail.com).", "danger")
         return redirect(url_for("index"))
 
     # 1. Check if user already exists
@@ -91,10 +93,12 @@ def signup():
         flash("Username already exists. Please log in instead.", "warning")
         return redirect(url_for("index"))
 
-    # 2. Insert new user with email instead of password hash
+    # 2. Hash the email to store it in the password_hash column for RLS compatibility
+    email_hash = generate_password_hash(email)
+    
     insert_data = {
         "username": username,
-        "email": email
+        "password_hash": email_hash
     }
     
     insert_resp = supabase_request("POST", "logins", json_data=insert_data)
@@ -116,16 +120,16 @@ def login():
     username = request.form.get("username", "").strip()
     email = request.form.get("email", "").strip()
 
-    # Query Supabase for the user
-    resp = supabase_request("GET", "logins", params={"username": f"eq.{username}", "select": "username,email"})
+    # Query Supabase for the user's password_hash
+    resp = supabase_request("GET", "logins", params={"username": f"eq.{username}", "select": "username,password_hash"})
     
     if resp and resp.status_code == 200:
         data = resp.json()
         if len(data) == 1:
             user_record = data[0]
-            # Verify email
-            stored_email = user_record.get("email")
-            if stored_email and stored_email.lower() == email.lower():
+            # Verify the "email" matches the stored "password_hash"
+            stored_hash = user_record.get("password_hash")
+            if stored_hash and check_password_hash(stored_hash, email):
                 session["user"] = username
                 flash("Authentication successful.", "success")
                 return redirect(url_for("app_dashboard"))

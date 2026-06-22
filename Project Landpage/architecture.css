@@ -1,0 +1,737 @@
+/* ==========================================================================
+   Architecture Page — Additional Styles
+   Extends style.css with page-specific rules for architecture.html
+   ========================================================================== */
+
+/* Third glow sphere for architecture page */
+.glow-sphere-3 {
+    width: 400px;
+    height: 400px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
+}
+
+/* Back Link in Navbar */
+.back-link {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.4rem 0.85rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-speed) ease;
+}
+
+.back-link:hover {
+    color: var(--text-primary);
+    border-color: var(--border-hover);
+    background-color: rgba(99, 102, 241, 0.08);
+}
+
+/* ==========================================================================
+   Architecture Main Layout
+   ========================================================================== */
+.arch-main {
+    flex: 1;
+    max-width: 920px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 2rem 2rem 4rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+}
+
+/* ==========================================================================
+   Page Hero
+   ========================================================================== */
+.arch-hero {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 3rem 0 1rem;
+}
+
+.arch-hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    align-self: flex-start;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--primary);
+    background-color: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+}
+
+.arch-hero-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.15;
+    background: linear-gradient(to right, #fff, #a5b4fc, #c084fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.arch-hero-subtitle {
+    font-size: 1.05rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    max-width: 750px;
+}
+
+/* ==========================================================================
+   Table of Contents
+   ========================================================================== */
+.toc-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 1.25rem;
+    padding: 2rem 2.25rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.toc-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 1.25rem;
+    color: var(--text-primary);
+}
+
+.toc-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem 2rem;
+    padding-left: 1.25rem;
+}
+
+.toc-list li {
+    font-size: 0.9rem;
+}
+
+.toc-list a {
+    color: var(--text-secondary);
+    text-decoration: none;
+    transition: color var(--transition-speed) ease;
+}
+
+.toc-list a:hover {
+    color: var(--primary);
+}
+
+/* ==========================================================================
+   Section Layout
+   ========================================================================== */
+.arch-section {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.section-number {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.6;
+}
+
+.arch-section-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(to right, #fff, #cbd5e1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.arch-content-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 1.25rem;
+    padding: 2.25rem;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.arch-content-card p {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+.arch-content-card strong {
+    color: var(--text-primary);
+}
+
+.arch-content-card em {
+    color: #a5b4fc;
+    font-style: italic;
+}
+
+.subsection-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 0.75rem;
+}
+
+/* Detail Lists */
+.detail-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding-left: 0;
+}
+
+.detail-list li {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+    position: relative;
+    padding-left: 1.35rem;
+}
+
+.detail-list li::before {
+    content: '▪';
+    color: var(--primary);
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+.detail-list li strong {
+    color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Pipeline Grid (Stage Cards)
+   ========================================================================== */
+.pipeline-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.pipeline-stage {
+    background-color: rgba(3, 7, 18, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    transition: border-color var(--transition-speed) ease;
+}
+
+.pipeline-stage:hover {
+    border-color: rgba(99, 102, 241, 0.25);
+}
+
+.stage-header {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+}
+
+.stage-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #030712;
+    background: linear-gradient(135deg, var(--primary), #818cf8);
+    padding: 0.25rem 0.7rem;
+    border-radius: 0.35rem;
+    flex-shrink: 0;
+}
+
+.stage-header h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.stage-file {
+    font-size: 0.8rem !important;
+    color: var(--text-muted) !important;
+}
+
+.stage-file code {
+    font-family: 'JetBrains Mono', monospace;
+    background-color: rgba(99, 102, 241, 0.1);
+    padding: 0.15rem 0.45rem;
+    border-radius: 0.25rem;
+    font-size: 0.78rem;
+    color: #a5b4fc;
+}
+
+.pipeline-stage > p:last-child {
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+}
+
+/* ==========================================================================
+   Feature Engineering Grid
+   ========================================================================== */
+.feature-engineering-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+    margin-top: 0.5rem;
+}
+
+.fe-card {
+    background-color: rgba(3, 7, 18, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0.85rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    transition: border-color var(--transition-speed) ease;
+}
+
+.fe-card:hover {
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.fe-card h4 {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.fe-card p {
+    font-size: 0.85rem !important;
+    line-height: 1.6;
+}
+
+.fe-card code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background-color: rgba(99, 102, 241, 0.1);
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.2rem;
+    color: #a5b4fc;
+}
+
+/* ==========================================================================
+   Models Table
+   ========================================================================== */
+.models-table-wrapper {
+    overflow-x: auto;
+    border-radius: 0.85rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.models-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.models-table thead {
+    background-color: rgba(99, 102, 241, 0.08);
+}
+
+.models-table th {
+    text-align: left;
+    padding: 0.85rem 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.models-table td {
+    padding: 0.75rem 1rem;
+    color: var(--text-secondary);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    line-height: 1.5;
+    vertical-align: top;
+}
+
+.models-table tr:hover td {
+    background-color: rgba(99, 102, 241, 0.03);
+}
+
+.models-table code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.76rem;
+    background-color: rgba(99, 102, 241, 0.1);
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.2rem;
+    color: #a5b4fc;
+    white-space: nowrap;
+}
+
+/* ==========================================================================
+   XAI Dual Panel
+   ========================================================================== */
+.xai-dual-panel {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 0.5rem;
+}
+
+.xai-panel {
+    background-color: rgba(3, 7, 18, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.xai-panel:hover {
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.xai-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.xai-panel-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.xai-badge {
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--accent);
+    background-color: rgba(217, 70, 239, 0.1);
+    border: 1px solid rgba(217, 70, 239, 0.2);
+    padding: 0.2rem 0.6rem;
+    border-radius: 0.3rem;
+    flex-shrink: 0;
+}
+
+.xai-panel p {
+    font-size: 0.85rem !important;
+    line-height: 1.65;
+}
+
+.xai-panel h4 {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin-top: 0.25rem;
+}
+
+.xai-panel code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background-color: rgba(99, 102, 241, 0.1);
+    padding: 0.1rem 0.35rem;
+    border-radius: 0.2rem;
+    color: #a5b4fc;
+}
+
+.xai-panel .detail-list li {
+    font-size: 0.83rem;
+}
+
+/* ==========================================================================
+   Architecture Diagram
+   ========================================================================== */
+.arch-diagram {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin: 1rem 0;
+}
+
+.arch-layer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.layer-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--text-muted);
+}
+
+.arch-box {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 0.85rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    text-align: center;
+}
+
+.arch-box-icon {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.arch-box h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.arch-box p {
+    font-size: 0.8rem !important;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.arch-box-client {
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.arch-box-frontend {
+    background: rgba(217, 70, 239, 0.08);
+    border: 1px solid rgba(217, 70, 239, 0.2);
+}
+
+.arch-box-backend {
+    background: rgba(99, 102, 241, 0.08);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.arch-arrow {
+    font-size: 1.5rem;
+    color: var(--text-muted);
+    padding: 0.5rem 0;
+    opacity: 0.5;
+}
+
+.arch-artifacts-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.75rem;
+    width: 100%;
+}
+
+.arch-artifact {
+    background-color: rgba(3, 7, 18, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0.6rem;
+    padding: 0.85rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    text-align: center;
+}
+
+.arch-artifact code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem;
+    color: #a5b4fc;
+    background-color: rgba(99, 102, 241, 0.1);
+    padding: 0.15rem 0.4rem;
+    border-radius: 0.2rem;
+    word-break: break-all;
+}
+
+.arch-artifact span {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Repository Tree
+   ========================================================================== */
+.repo-tree {
+    background-color: rgba(3, 7, 18, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 0.85rem;
+    padding: 1.75rem;
+    overflow-x: auto;
+}
+
+.repo-tree pre {
+    margin: 0;
+}
+
+.repo-tree code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+
+/* ==========================================================================
+   Technology Grid
+   ========================================================================== */
+.tech-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+}
+
+.tech-category {
+    background-color: rgba(3, 7, 18, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 0.85rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.tech-category:hover {
+    border-color: rgba(99, 102, 241, 0.15);
+}
+
+.tech-category h4 {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.tech-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding-left: 0;
+}
+
+.tech-list li {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
+}
+
+.tech-list li strong {
+    color: var(--text-primary);
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.arch-footer {
+    border-top: 1px solid var(--border-color);
+    padding: 2.5rem 0 1rem;
+    margin-top: 1rem;
+}
+
+.arch-footer-inner {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.arch-footer-inner p {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.arch-footer-sub {
+    font-size: 0.75rem !important;
+    color: var(--text-muted) !important;
+}
+
+.back-to-portal {
+    display: inline-block;
+    margin-top: 0.75rem;
+    color: var(--primary);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.45rem 1rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    transition: all var(--transition-speed) ease;
+}
+
+.back-to-portal:hover {
+    background-color: rgba(99, 102, 241, 0.1);
+    border-color: rgba(99, 102, 241, 0.4);
+}
+
+/* ==========================================================================
+   Responsive — Architecture Page
+   ========================================================================== */
+@media (max-width: 768px) {
+    .arch-hero-title {
+        font-size: 1.85rem;
+    }
+
+    .toc-list {
+        grid-template-columns: 1fr;
+    }
+
+    .feature-engineering-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .xai-dual-panel {
+        grid-template-columns: 1fr;
+    }
+
+    .tech-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .arch-artifacts-row {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .arch-content-card {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .arch-main {
+        padding: 1rem 1rem 3rem;
+    }
+
+    .arch-hero-title {
+        font-size: 1.5rem;
+    }
+
+    .arch-artifacts-row {
+        grid-template-columns: 1fr;
+    }
+}

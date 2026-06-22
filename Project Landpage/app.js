@@ -1,18 +1,17 @@
 /**
  * LOAN XAI SYSTEM - Project Landing Page Controller
- * Handles modal display, form verification, and Supabase database logging.
+ * Handles form verification, Supabase database logging, and toast notifications.
  */
 
 // ==========================================================================
-// Supabase Configuration Configuration
-// Replace with your actual Supabase project keys to activate live logging
+// Supabase Configuration
 // ==========================================================================
-const SUPABASE_URL = "YOUR_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+const SUPABASE_URL = "https://nceokvawdzxwjzqitszd.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZW9rdmF3ZHp4d2p6cWl0c3pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzM3MjYsImV4cCI6MjA5NzcwOTcyNn0.fNqf3Lq8MkpAwFW3yRFJ2jhHgar1NeDXZ1eLnjYOIJo";
 
 let supabaseClient = null;
 
-// Initialize Supabase if keys are configured
+// Initialize Supabase client
 const hasValidSupabaseConfig = 
     SUPABASE_URL && 
     SUPABASE_URL !== "YOUR_SUPABASE_URL" && 
@@ -21,17 +20,66 @@ const hasValidSupabaseConfig =
 
 if (hasValidSupabaseConfig) {
     try {
-        // Supabase CDN exposes 'supabase' globally
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log("Supabase Client initialized successfully!");
+        console.log("Supabase Client initialized successfully.");
     } catch (e) {
         console.error("Failed to initialize Supabase client:", e);
     }
 } else {
     console.warn(
-        "Supabase credentials not configured. The gateway is running in local mock mode. " +
+        "Supabase credentials not configured. Running in local mock mode. " +
         "Signups will be saved to localStorage and redirect automatically."
     );
+}
+
+// ==========================================================================
+// Toast Notification System
+// ==========================================================================
+function showToast(message, type = "info", duration = 4000) {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    // Trigger entrance animation
+    requestAnimationFrame(() => {
+        toast.classList.add("toast-visible");
+    });
+
+    // Auto-remove after duration
+    setTimeout(() => {
+        toast.classList.remove("toast-visible");
+        toast.addEventListener("transitionend", () => toast.remove(), { once: true });
+        // Fallback removal if transitionend doesn't fire
+        setTimeout(() => toast.remove(), 500);
+    }, duration);
+}
+
+// ==========================================================================
+// Input Sanitization
+// ==========================================================================
+function sanitizeInput(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML.trim();
+}
+
+// ==========================================================================
+// Rate Limiting (localStorage-based, 1 submission per 30 seconds)
+// ==========================================================================
+function isRateLimited() {
+    const lastSubmit = localStorage.getItem("last_login_submit");
+    if (!lastSubmit) return false;
+    const elapsed = Date.now() - parseInt(lastSubmit, 10);
+    return elapsed < 30000; // 30 seconds cooldown
+}
+
+function markSubmission() {
+    localStorage.setItem("last_login_submit", Date.now().toString());
 }
 
 // ==========================================================================
@@ -43,11 +91,6 @@ const emailInput = document.getElementById("email");
 const btnSubmit = document.getElementById("btn-submit");
 const btnText = btnSubmit.querySelector(".btn-text");
 const spinner = btnSubmit.querySelector(".spinner");
-
-const btnExtraInfo = document.getElementById("btn-extra-info");
-const modalExtraInfo = document.getElementById("modal-extra-info");
-const btnCloseModal = document.getElementById("btn-close-modal");
-const btnModalOk = document.getElementById("btn-modal-ok");
 
 // ==========================================================================
 // Form Validation Logic
@@ -77,10 +120,22 @@ emailInput.addEventListener("input", validateForm);
 loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     
-    const username = usernameInput.value.trim();
-    const email = emailInput.value.trim();
+    // Rate limit check
+    if (isRateLimited()) {
+        showToast("Please wait a moment before submitting again.", "warning");
+        return;
+    }
+
+    const username = sanitizeInput(usernameInput.value);
+    const email = sanitizeInput(emailInput.value);
     const redirectUrl = "https://depi-loan-default-xai-frontend.onrender.com/";
     
+    // Validate sanitized values
+    if (username.length < 3 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        showToast("Please enter valid credentials.", "error");
+        return;
+    }
+
     // Set UI loading state
     btnSubmit.disabled = true;
     btnText.textContent = "Connecting to Suite...";
@@ -89,7 +144,6 @@ loginForm.addEventListener("submit", async (e) => {
     if (supabaseClient) {
         // --- Live Database Flow ---
         try {
-            console.log("Saving credential log to Supabase...");
             const { data, error } = await supabaseClient
                 .from("logins")
                 .insert([{ username: username, email: email }]);
@@ -97,14 +151,23 @@ loginForm.addEventListener("submit", async (e) => {
             if (error) {
                 throw error;
             }
-            console.log("Logged login details to Supabase database:", data);
+            console.log("User credentials logged to Supabase.");
         } catch (dbError) {
             console.error("Supabase Database error:", dbError);
-            // We alert the console but don't block user experience (graceful degradation)
+            // Graceful degradation — don't block the user
+            showToast("Connection logged locally (database temporarily unavailable).", "warning");
+            // Fallback to localStorage
+            try {
+                const records = JSON.parse(localStorage.getItem("landpage_logins") || "[]");
+                records.push({ username, email, timestamp: new Date().toISOString() });
+                localStorage.setItem("landpage_logins", JSON.stringify(records));
+            } catch (storageError) {
+                // Silent fail
+            }
         }
     } else {
         // --- Fallback Mock Storage Flow ---
-        console.log("Local Gateway Mock: Logging record to localStorage...");
+        console.log("Local mode: Logging record to localStorage.");
         try {
             const records = JSON.parse(localStorage.getItem("landpage_logins") || "[]");
             records.push({ username, email, timestamp: new Date().toISOString() });
@@ -114,42 +177,15 @@ loginForm.addEventListener("submit", async (e) => {
         }
     }
     
-    // Smooth delay before redirecting for optimal user experience
+    // Mark rate limiter
+    markSubmission();
+
+    // Smooth delay before redirecting
     setTimeout(() => {
         btnText.textContent = "Access Granted! Redirecting...";
+        showToast("Access granted. Redirecting to LOAN XAI SYSTEM...", "success");
         setTimeout(() => {
             window.location.href = redirectUrl;
         }, 800);
     }, 1200);
-});
-
-// ==========================================================================
-// Extra Info Modal Interactions
-// ==========================================================================
-function openModal() {
-    modalExtraInfo.classList.remove("hidden");
-    document.body.style.overflow = "hidden"; // Disable background scrolling
-}
-
-function closeModal() {
-    modalExtraInfo.classList.add("hidden");
-    document.body.style.overflow = ""; // Re-enable background scrolling
-}
-
-btnExtraInfo.addEventListener("click", openModal);
-btnCloseModal.addEventListener("click", closeModal);
-btnModalOk.addEventListener("click", closeModal);
-
-// Close modal if user clicks outside the modal card overlay
-modalExtraInfo.addEventListener("click", (e) => {
-    if (e.target === modalExtraInfo) {
-        closeModal();
-    }
-});
-
-// ESC key to close modal
-document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !modalExtraInfo.classList.contains("hidden")) {
-        closeModal();
-    }
 });

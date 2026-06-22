@@ -4,10 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>LOAN XAI SYSTEM - Explainable AI Portal</title>
+    <meta name="description" content="An automated Explainable AI system for loan default prediction. Uses LightGBM, XGBoost, Random Forest, Neural Networks with SHAP and LIME interpretability.">
+    <meta name="robots" content="index, follow">
+    <meta property="og:title" content="LOAN XAI SYSTEM - Automated Explainable AI">
+    <meta property="og:description" content="Production-grade loan default prediction with multi-model XAI pipelines including SHAP waterfall charts and LIME local explanations.">
+    <meta property="og:type" content="website">
+    <meta name="theme-color" content="#6366f1">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
@@ -42,41 +48,41 @@
             <section class="left-panel">
                 <div class="hero-header">
                     <h1 class="main-title">LOAN XAI SYSTEM</h1>
-                    <p class="subtitle">Explainable Credit Underwriting & Machine Learning Risk Interpretability</p>
+                    <p class="subtitle">Automated Explainable AI for Loan Default Prediction</p>
                 </div>
 
                 <div class="project-summary-card">
                     <h2 class="section-title">Project Summary</h2>
                     <p class="summary-paragraph">
-                        An advanced, production-ready Explainable AI (XAI) suite designed to evaluate loan applicant default risks. By integrating transparent machine learning pipelines with local interpretability frameworks, this platform provides loan underwriters and applicants with clear, mathematically validated credit decisions.
+                        This project implements an end-to-end automated machine learning pipeline for predicting loan defaults, with a strong emphasis on model explainability and interpretability. The system covers the full data science lifecycle — from exploratory data analysis and preprocessing through model training, hyperparameter tuning, and post-hoc explainability — producing transparent, human-readable credit risk assessments that financial institutions and individual applicants can understand and trust.
                     </p>
                     <ul class="feature-list">
                         <li>
                             <span class="feature-icon">⚡</span>
                             <div>
-                                <strong>Dual-Model Architecture:</strong> Utilizes high-performance LightGBM and scale-invariant XGBoost models for robust inference.
+                                <strong>Multi-Model Training Pipeline:</strong> Trains and evaluates multiple classifiers including LightGBM (with SMOTE, tuning, and early stopping variants), XGBoost, Random Forest, Logistic Regression, Ensemble Soft Voting, and deep learning Tabular MLPs (Keras) — selecting the best-performing model via ROC-AUC, precision-recall, and confusion matrix analysis.
                             </div>
                         </li>
                         <li>
                             <span class="feature-icon">📊</span>
                             <div>
-                                <strong>Interactive SHAP Explanations:</strong> Generates real-time SHAP waterfall charts showing how each individual feature pushes default probability up or down.
+                                <strong>SHAP & LIME Explainability:</strong> Generates SHAP waterfall charts, beeswarm plots, and feature importance rankings alongside LIME local surrogate models — providing both global and per-prediction explanations of how each feature (credit score, DTI ratio, interest rate, etc.) influences the default probability.
                             </div>
                         </li>
                         <li>
                             <span class="feature-icon">🎯</span>
                             <div>
-                                <strong>LIME Local Surrogacy:</strong> Fits dynamic surrogate models locally around applicant profiles to cross-examine and corroborate prediction confidence.
+                                <strong>Automated Feature Engineering:</strong> Automatically computes 27+ engineered interaction features including log-scaled income/loan ratios, debt burden scores, risk composite indicators, employment ratios, and high-risk binary flags — transforming raw applicant data into a 36-dimensional feature space optimized for model performance.
                             </div>
                         </li>
                     </ul>
 
-                    <button id="btn-extra-info" class="btn-primary-glow">
+                    <a href="architecture.html" id="btn-explore-arch" class="btn-primary-glow">
                         Explore System Architecture
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <polyline points="9 18 15 12 9 6"></polyline>
                         </svg>
-                    </button>
+                    </a>
                 </div>
 
                 <!-- Team Directory -->
@@ -228,43 +234,8 @@
         </div>
     </main>
 
-    <!-- Overlay Modal for Extra Info -->
-    <div id="modal-extra-info" class="modal-overlay hidden">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h3 class="modal-title">System & XAI Architecture</h3>
-                <button id="btn-close-modal" class="btn-close">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </div>
-            <div class="modal-body">
-                <section class="modal-section">
-                    <h4>Explainable AI (XAI) Pipelines</h4>
-                    <p>The core innovation of the LOAN XAI SYSTEM is its transparency. Traditional credit scoring models operate as "black boxes," leaving applicants and loan officers in the dark regarding rejection reasons. This suite implements two levels of explanatory outputs:</p>
-                    <ul>
-                        <li><strong>SHAP (SHapley Additive exPlanations):</strong> Based on cooperative game theory, SHAP allocates an importance value (Shapley value) to each feature for every specific prediction. It details how the applicant's parameters (e.g. high DTI ratio or low Credit Score) mathematically shifted the model's final risk percentage relative to a baseline training average.</li>
-                        <li><strong>LIME (Local Interpretable Model-agnostic Explanations):</strong> LIME perturbs the applicant's input features to create a synthetic neighborhood, queries the model to see how predictions change, and fits a simple, interpretable linear surrogate model locally. This provides an independent validation of feature sensitivity.</li>
-                    </ul>
-                </section>
-                
-                <section class="modal-section">
-                    <h4>Technical Stack</h4>
-                    <p>The system is built as a stateless, decoupled multi-service application:</p>
-                    <ul>
-                        <li><strong>Backend API (FastAPI):</strong> Handles high-performance ML inference, feature scaling/engineering, and triggers matplotlib and SHAP visualization engines on-demand.</li>
-                        <li><strong>Frontend Workspace (Flask):</strong> A sleek, dashboard interface displaying default probability radial meters and full-scale waterfall charts.</li>
-                        <li><strong>Database Integration (Supabase):</strong> Logs secure portal admissions to verify team member registrations and auditor check-ins.</li>
-                    </ul>
-                </section>
-            </div>
-            <div class="modal-footer">
-                <button id="btn-modal-ok" class="btn-modal-primary">Understood</button>
-            </div>
-        </div>
-    </div>
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
 
     <!-- Supabase JS Client CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.39.8/dist/umd/supabase.js"></script>

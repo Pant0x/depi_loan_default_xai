@@ -98,6 +98,7 @@ def signup():
     
     insert_data = {
         "username": username,
+        "email": email,
         "password_hash": email_hash
     }
     

@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOAN XAI SYSTEM - Explainable AI Portal</title>
+    <meta name="description" content="An automated Explainable AI system for loan default prediction. Uses LightGBM, XGBoost, Random Forest, Neural Networks with SHAP and LIME interpretability.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Flask Flash Messages as Data Attributes for the JS to read -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message-data hidden" data-category="{{ category }}" data-message="{{ message }}"></div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Background Glow Elements -->
+    <div class="glow-sphere glow-sphere-1"></div>
+    <div class="glow-sphere glow-sphere-2"></div>
+    <div class="glow-sphere glow-sphere-3"></div>
+
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="logo-section">
+                <div class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <span class="logo-text">LOAN XAI SYSTEM</span>
+            </div>
+            <div class="nav-status">
+                <span class="pulse-indicator"></span>
+                <span class="status-text">Production Gateway</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section (Landing) -->
+    <main class="main-layout" style="padding-bottom: 2rem;">
+        <div class="split-container">
+            
+            <!-- Left Panel: Summary -->
+            <section class="left-panel">
+                <div class="hero-header">
+                    <h1 class="main-title">LOAN XAI SYSTEM</h1>
+                    <p class="subtitle">Automated Explainable AI for Loan Default Prediction</p>
+                </div>
+
+                <div class="project-summary-card">
+                    <h2 class="section-title">Project Summary</h2>
+                    <p class="summary-paragraph">
+                        This project implements an end-to-end automated machine learning pipeline for predicting loan defaults, with a strong emphasis on model explainability and interpretability.
+                    </p>
+                    <ul class="feature-list">
+                        <li>
+                            <span class="feature-icon">⚡</span>
+                            <div>
+                                <strong>Multi-Model Training Pipeline:</strong> LightGBM, XGBoost, Random Forest, Logistic Regression, Ensemble Soft Voting, and deep learning Tabular MLPs (Keras).
+                            </div>
+                        </li>
+                        <li>
+                            <span class="feature-icon">📊</span>
+                            <div>
+                                <strong>SHAP & LIME Explainability:</strong> Generates SHAP waterfall charts, beeswarm plots, alongside LIME local surrogate models for prediction transparency.
+                            </div>
+                        </li>
+                        <li>
+                            <span class="feature-icon">🎯</span>
+                            <div>
+                                <strong>Automated Feature Engineering:</strong> Computes 27+ engineered interaction features dynamically for the 36-dimensional feature space.
+                            </div>
+                        </li>
+                    </ul>
+
+                    <button id="btn-explore-arch" class="btn-primary-glow">
+                        Explore System Architecture
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Panel: Login/Signup Card -->
+            <section class="right-panel">
+                <div class="login-card">
+                    <div class="login-card-header">
+                        <h2 class="login-title">Access Gateway</h2>
+                        <p class="login-subtitle">Authenticate to connect to the underwriting workspace.</p>
+                    </div>
+
+                    <!-- Auth Toggle -->
+                    <div class="auth-toggle-container" id="auth-toggle-container">
+                        <div class="auth-toggle-slider"></div>
+                        <button type="button" class="auth-toggle-btn active" id="btn-toggle-signup">Sign Up</button>
+                        <button type="button" class="auth-toggle-btn" id="btn-toggle-login">Log In</button>
+                    </div>
+
+                    <form id="auth-form" method="POST" action="/signup">
+                        <input type="hidden" name="action" id="form-action" value="signup">
+                        
+                        <div class="form-group">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" id="username" name="username" class="form-input" placeholder="e.g. loan_officer_45" autocomplete="username" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" id="password" name="password" class="form-input" placeholder="Enter secure password" autocomplete="current-password" required>
+                        </div>
+
+                        <div class="supabase-status-info">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                            <span>Credentials secured via Supabase DB</span>
+                        </div>
+
+                        <button type="submit" class="btn-submit">
+                            <span class="btn-text" id="btn-submit-text">Create Account</span>
+                        </button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Architecture Section (Scroll Target) -->
+    <section id="architecture-section" class="arch-main" style="padding-top: 4rem;">
+        
+        <div style="width: 100%; border-top: 1px solid rgba(255,255,255,0.1); margin-bottom: 3rem;"></div>
+
+        <section class="arch-hero" style="padding-top: 0;">
+            <div class="arch-hero-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+                Technical Documentation
+            </div>
+            <h2 class="arch-hero-title" style="font-size: 2rem;">System Architecture & Project Documentation</h2>
+        </section>
+
+        <!-- Section 1: Pipeline -->
+        <section class="arch-section">
+            <div class="section-number">01</div>
+            <h2 class="arch-section-title">ML Pipeline Stages</h2>
+            <div class="arch-content-card">
+                <div class="pipeline-grid">
+                    <div class="pipeline-stage">
+                        <div class="stage-header">
+                            <span class="stage-badge">Stage 1</span>
+                            <h3>Exploratory Data Analysis (EDA)</h3>
+                        </div>
+                        <p class="stage-file"><code>notebook/EDA.ipynb</code></p>
+                        <p>Loading the raw Kaggle Loan Default dataset and performing a thorough statistical exploration. Includes computing summary statistics, plotting distribution histograms to identify skewness, and generating a correlation heatmap to detect multicollinearity.</p>
+                    </div>
+
+                    <div class="pipeline-stage">
+                        <div class="stage-header">
+                            <span class="stage-badge">Stage 2</span>
+                            <h3>Data Preprocessing</h3>
+                        </div>
+                        <p class="stage-file"><code>notebook/Preprocessing.ipynb</code></p>
+                        <p>Handles data cleaning and transformation. Operations include handling missing values, encoding categorical variables, applying log transformations, fitting a StandardScaler, and splitting the dataset into training, validation, and test partitions.</p>
+                    </div>
+
+                    <div class="pipeline-stage">
+                        <div class="stage-header">
+                            <span class="stage-badge">Stage 3</span>
+                            <h3>Model Building & Evaluation</h3>
+                        </div>
+                        <p class="stage-file"><code>notebook/building_models.ipynb</code></p>
+                        <p>Training multiple models including Logistic Regression, Random Forest, LightGBM (Base, SMOTE, Tuned, Early Stopping), XGBoost, Ensemble Soft Voting, and Tabular Deep Learning MLP. Each model is evaluated using ROC-AUC curves and precision-recall analysis.</p>
+                    </div>
+
+                    <div class="pipeline-stage">
+                        <div class="stage-header">
+                            <span class="stage-badge">Stage 4</span>
+                            <h3>SHAP & LIME Explainability</h3>
+                        </div>
+                        <p class="stage-file"><code>notebook/shap_lime_explainer.ipynb</code></p>
+                        <p>Applies post-hoc explainability techniques. SHAP TreeExplainer computes Shapley values for generating waterfall and beeswarm plots. LIME fits local linear surrogate models around individual predictions to cross-validate feature importance.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 2: Models Table -->
+        <section class="arch-section">
+            <div class="section-number">02</div>
+            <h2 class="arch-section-title">Model Catalog</h2>
+            <div class="arch-content-card">
+                <div class="models-table-wrapper">
+                    <table class="models-table">
+                        <thead>
+                            <tr>
+                                <th>Model</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>lightgbm_model (1).joblib</code></td>
+                                <td>Gradient Boosting</td>
+                                <td>Base LightGBM classifier with default hyperparameters. Primary tree-based model for SHAP explainability.</td>
+                            </tr>
+                            <tr>
+                                <td><code>lightgbm_smote_model.joblib</code></td>
+                                <td>Gradient Boosting</td>
+                                <td>LightGBM trained on SMOTE-augmented data to address class imbalance.</td>
+                            </tr>
+                            <tr>
+                                <td><code>xgboost_model (1).joblib</code></td>
+                                <td>Gradient Boosting</td>
+                                <td>XGBoost classifier providing an alternative gradient boosting implementation.</td>
+                            </tr>
+                            <tr>
+                                <td><code>random_forest_model.joblib</code></td>
+                                <td>Ensemble (Bagging)</td>
+                                <td>Random Forest classifier using bootstrap-aggregated decision trees.</td>
+                            </tr>
+                            <tr>
+                                <td><code>optimized_tabular_mlp.keras</code></td>
+                                <td>Deep Learning</td>
+                                <td>Optimized MLP with dropout regularization, batch normalization, and learning rate scheduling.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Architecture Diagram -->
+        <section class="arch-section">
+            <div class="section-number">03</div>
+            <h2 class="arch-section-title">Deployment Architecture</h2>
+            <div class="arch-content-card">
+                <div class="arch-diagram">
+                    <div class="arch-layer">
+                        <div class="layer-label">Presentation Layer</div>
+                        <div class="arch-box arch-box-frontend">
+                            <span class="arch-box-icon">🎨</span>
+                            <h4>Frontend Web (Flask)</h4>
+                            <p>Renders the application form and dashboard. Forwards payloads to backend and securely authenticates via Supabase DB.</p>
+                        </div>
+                    </div>
+                    <div class="arch-arrow">↓</div>
+                    <div class="arch-layer">
+                        <div class="layer-label">Inference Layer</div>
+                        <div class="arch-box arch-box-backend">
+                            <span class="arch-box-icon">⚡</span>
+                            <h4>Backend API (FastAPI)</h4>
+                            <p>Applies feature engineering (27 computed features), runs inference on selected models, and generates SHAP/LIME plots.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </section>
+
+    <div id="toast-container" class="toast-container"></div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

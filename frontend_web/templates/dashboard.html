@@ -1,165 +1,99 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-950 text-slate-100">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Risk Analysis Dashboard - LOAN XAI SYSTEM</title>
-    <link rel="icon" href="{{ url_for('static', filename='favicon.png') }}" type="image/png">
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Outfit', sans-serif;
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body class="min-h-full flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+<body>
+    <!-- Background Glow Elements -->
+    <div class="glow-sphere glow-sphere-1"></div>
+    <div class="glow-sphere glow-sphere-2"></div>
 
-    <!-- Navbar -->
-    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <a href="{{ url_for('index') }}" class="h-9 w-9 rounded-lg bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 hover:scale-105 transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="nav-container" style="max-width: 1400px;">
+            <a href="/" class="logo-section" style="text-decoration:none;">
+                <div class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
-                </a>
-                <div>
-                    <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-indigo-200 via-purple-200 to-pink-200 bg-clip-text text-transparent">LOAN XAI SYSTEM</h1>
-                    <p class="text-xs text-slate-400">Risk Assessment Dashboard</p>
                 </div>
-            </div>
-            <div class="flex items-center gap-3 text-xs font-semibold">
-                <span class="text-slate-400">Model:</span>
-                <span class="py-1 px-3 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 uppercase tracking-wider text-[10px]">
-                    {{ result.model_type }}
+                <span class="logo-text">LOAN XAI SYSTEM</span>
+            </a>
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <span style="font-size: 0.85rem; color: var(--text-muted);">
+                    Model: <strong style="color: var(--primary); text-transform: uppercase;">{{ result.model_type }}</strong>
                 </span>
+                <div class="nav-links">
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Officer: <strong style="color:var(--text-primary);">{{ username }}</strong></span>
+                    <a href="/logout" class="nav-link">Log Out</a>
+                </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+    <main class="app-container" style="flex: 1;">
         
         <!-- Dashboard Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
             
             <!-- Left Side: Risk Score Gauge and Prediction Alert -->
-            <div class="lg:col-span-1 flex flex-col gap-8">
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
                 
                 <!-- Risk Meter Card -->
-                <div class="bg-slate-900/60 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col items-center justify-center relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-                    <h3 class="text-sm font-semibold tracking-wider uppercase text-slate-400 mb-6">Default Probability</h3>
+                <div class="app-card" style="position: relative; overflow: hidden; text-align: center; display: flex; flex-direction: column; align-items: center;">
+                    <div style="position: absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(to right, var(--primary), var(--accent));"></div>
+                    <h3 style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 2rem;">Default Probability</h3>
                     
-                    <!-- Circular Radial Meter -->
-                    <div class="relative flex items-center justify-center">
-                        {% set risk_pct = (result.probability * 100) | round(1) %}
-                        
-                        <!-- Outer Track -->
-                        <svg class="w-40 h-40 transform -rotate-90">
-                            <circle cx="80" cy="80" r="70" class="stroke-slate-800" stroke-width="12" fill="transparent" />
-                            
-                            <!-- Glowing Colored Bar based on risk -->
-                            {% if result.risk_level == "Low Risk" %}
-                                {% set color_class = "stroke-emerald-500 shadow-emerald-500" %}
-                            {% elif result.risk_level == "Medium Risk" %}
-                                {% set color_class = "stroke-amber-500 shadow-amber-500" %}
-                            {% else %}
-                                {% set color_class = "stroke-rose-500 shadow-rose-500" %}
-                            {% endif %}
-                            
-                            <!-- Stroke-dasharray calculation: 2 * PI * r = 2 * 3.14159 * 70 = 439.82 -->
-                            <circle cx="80" cy="80" r="70" 
-                                class="{{ color_class }} transition-all duration-1000 ease-out" 
-                                stroke-width="12" 
-                                fill="transparent" 
-                                stroke-dasharray="440" 
-                                stroke-dashoffset="{{ 440 - (440 * result.probability) }}" 
-                                stroke-linecap="round" />
-                        </svg>
-                        
-                        <!-- Internal Risk Score Text -->
-                        <div class="absolute text-center">
-                            <span class="text-3xl font-extrabold text-white">{{ risk_pct }}%</span>
-                            <span class="block text-[10px] text-slate-500 uppercase font-bold tracking-wider mt-1">Default Risk</span>
-                        </div>
+                    {% set risk_pct = (result.probability * 100) | round(1) %}
+                    
+                    <div class="result-banner {% if result.risk_level == 'Low Risk' %}low-risk{% elif result.risk_level == 'Medium Risk' %}medium-risk{% else %}high-risk{% endif %}" style="width: 100%; padding: 2rem 1rem;">
+                        <span class="risk-label">{{ result.risk_level }}</span>
+                        <span class="risk-score">{{ risk_pct }}%</span>
+                        <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase;">Probability of Default</span>
                     </div>
 
-                    <!-- Risk Level Category Pill -->
-                    <div class="mt-6 text-center">
-                        {% if result.risk_level == "Low Risk" %}
-                            <span class="inline-flex items-center gap-1.5 py-1 px-4 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider">
-                                <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
-                                {{ result.risk_level }}
-                            </span>
-                        {% elif result.risk_level == "Medium Risk" %}
-                            <span class="inline-flex items-center gap-1.5 py-1 px-4 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-xs font-semibold uppercase tracking-wider">
-                                <span class="h-2 w-2 rounded-full bg-amber-400"></span>
-                                {{ result.risk_level }}
-                            </span>
-                        {% else %}
-                            <span class="inline-flex items-center gap-1.5 py-1 px-4 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs font-semibold uppercase tracking-wider">
-                                <span class="h-2 w-2 rounded-full bg-rose-400"></span>
-                                {{ result.risk_level }}
-                            </span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Action Outcome Card -->
-                <div class="bg-slate-900/60 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
                     {% if result.prediction == 1 %}
-                        <!-- Denied Application Style -->
-                        <div class="absolute top-0 left-0 right-0 h-1 bg-rose-500"></div>
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="h-8 w-8 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 flex items-center justify-center shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                            </div>
-                            <h4 class="font-bold text-white">Underwriting Decision: REJECT</h4>
+                        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 0.75rem; padding: 1.25rem; width: 100%; text-align: left;">
+                            <h4 style="color: #fca5a5; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span>⚠️</span> Underwriting Decision: REJECT
+                            </h4>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                                The applicant presents a high risk of loan default. It is recommended to reject the application or request a higher co-signer commitment / additional collateral.
+                            </p>
                         </div>
-                        <p class="text-sm text-slate-300 leading-relaxed">
-                            The applicant presents a high risk of loan default. It is recommended to reject the application or request a higher co-signer commitment / additional collateral.
-                        </p>
                     {% else %}
-                        <!-- Approved Application Style -->
-                        <div class="absolute top-0 left-0 right-0 h-1 bg-emerald-500"></div>
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="h-8 w-8 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center shrink-0">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                            </div>
-                            <h4 class="font-bold text-white">Underwriting Decision: APPROVE</h4>
+                        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 0.75rem; padding: 1.25rem; width: 100%; text-align: left;">
+                            <h4 style="color: #6ee7b7; font-weight: 700; font-size: 1.1rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span>✅</span> Underwriting Decision: APPROVE
+                            </h4>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                                The applicant represents a low risk of loan default. Underwriting standards are satisfied. The application is eligible for automated processing.
+                            </p>
                         </div>
-                        <p class="text-sm text-slate-300 leading-relaxed">
-                            The applicant represents a low risk of loan default. Underwriting standards are satisfied. The application is eligible for automated processing.
-                        </p>
                     {% endif %}
                 </div>
 
                 <!-- Plain English Explanation Card -->
                 {% if result.text_explanation %}
-                <div class="bg-slate-900/60 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 to-purple-500"></div>
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="h-8 w-8 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 flex items-center justify-center shrink-0">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                            </svg>
-                        </div>
-                        <h4 class="font-bold text-white">Top Risk Drivers</h4>
+                <div class="app-card" style="position: relative; overflow: hidden;">
+                    <div style="position: absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(to right, var(--primary), var(--accent));"></div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                        <span class="xai-badge" style="background-color: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.2); color: #818cf8;">Info</span>
+                        <h4 style="font-weight: 700; font-size: 1.1rem;">Top Risk Drivers</h4>
                     </div>
-                    <ul class="space-y-3 text-sm text-slate-300">
+                    <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.75rem;">
                         {% for reason in result.text_explanation %}
-                            <li class="flex items-start gap-2.5">
-                                <span class="h-1.5 w-1.5 rounded-full bg-indigo-400 mt-2 shrink-0"></span>
+                            <li style="display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+                                <span style="color: var(--primary); margin-top: 0.1rem;">▪</span>
                                 <span>{{ reason }}</span>
                             </li>
                         {% endfor %}
@@ -170,71 +104,57 @@
             </div>
 
             <!-- Right Side: SHAP Plot and Detailed Explanation -->
-            <div class="lg:col-span-2 flex flex-col gap-8">
+            <div style="display: flex; flex-direction: column; gap: 2rem; grid-column: auto / span 2;">
                 
                 <!-- Dual XAI Explanation Container (SHAP & LIME) -->
-                <div class="bg-slate-900/60 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col relative overflow-hidden">
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-indigo-500"></div>
+                <div class="app-card" style="position: relative; overflow: hidden; display: flex; flex-direction: column;">
+                    <div style="position: absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(to right, #a855f7, #ec4899);"></div>
                     
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem;">
                         <div>
-                            <h3 class="text-lg font-bold text-white">Explainable AI (XAI) Suite</h3>
-                            <p class="text-xs text-slate-400">Interpret predictions locally using SHAP (feature contributions) and LIME (local surrogacy rules).</p>
+                            <h3 style="font-size: 1.25rem; font-weight: 700; color: white;">Explainable AI (XAI) Suite</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Interpret predictions locally using SHAP and LIME.</p>
                         </div>
                         
                         <!-- Tabs Navigation -->
-                        <div class="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 shrink-0 self-start sm:self-center">
-                            <button id="tab-shap" onclick="switchXaiTab('shap')" 
-                                class="py-1.5 px-3 rounded-lg text-xs font-semibold bg-indigo-600 text-white transition-all">
+                        <div style="display: flex; gap: 0.5rem; background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 0.25rem;">
+                            <button id="tab-shap" onclick="switchXaiTab('shap')" style="background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s;">
                                 SHAP Waterfall
                             </button>
-                            <button id="tab-lime" onclick="switchXaiTab('lime')" 
-                                class="py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-400 hover:text-slate-200 transition-all">
+                            <button id="tab-lime" onclick="switchXaiTab('lime')" style="background: transparent; color: var(--text-secondary); border: none; padding: 0.5rem 1rem; font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s;">
                                 LIME Surrogate
                             </button>
                         </div>
                     </div>
 
                     <!-- SHAP Tab Content -->
-                    <div id="content-shap" class="space-y-4">
+                    <div id="content-shap" style="display: flex; flex-direction: column; gap: 1rem;">
                         {% if result.shap_plot %}
-                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 flex items-center justify-center overflow-auto">
-                                <img src="data:image/png;base64,{{ result.shap_plot }}" alt="SHAP Explanation Waterfall Plot" class="max-w-full h-auto rounded-lg">
+                            <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; text-align: center;">
+                                <img src="data:image/png;base64,{{ result.shap_plot }}" alt="SHAP Explanation Waterfall Plot" style="max-width: 100%; height: auto; border-radius: 0.5rem; background: white;">
                             </div>
-                            <div class="p-3 rounded-lg bg-slate-950 border border-slate-900 text-xs text-slate-400 leading-relaxed">
-                                <span class="font-semibold text-slate-200">SHAP Waterfall Interpretation:</span> Features in <span class="text-rose-400 font-semibold">pink/red</span> increase the predicted probability of loan default (adding to the risk score), while features in <span class="text-sky-400 font-semibold">blue</span> decrease the default probability (reducing risk). The baseline value represent average risk across all applicants, and the final value sums up local contributions to compute the specific applicant probability.
+                            <div style="background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                                <strong style="color: white;">SHAP Waterfall Interpretation:</strong> Features in <strong style="color: #fca5a5;">pink/red</strong> increase the predicted probability of loan default, while features in <strong style="color: #7dd3fc;">blue</strong> decrease the default probability. The baseline value represents average risk across all applicants.
                             </div>
                         {% else %}
-                            <div class="flex flex-col items-center justify-center py-16 px-4 bg-slate-950 rounded-xl border border-slate-800/80 text-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-11 w-11 text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <h4 class="text-sm font-semibold text-slate-300">SHAP Waterfall Plot Unavailable</h4>
-                                <p class="text-xs text-slate-500 max-w-sm mt-1.5 leading-relaxed">
-                                    SHAP local visualizations are generated dynamically using tree-based models (LightGBM and XGBoost).
-                                </p>
+                            <div style="padding: 4rem 2rem; text-align: center; background-color: rgba(255,255,255,0.03); border-radius: 0.75rem; border: 1px dashed var(--border-color);">
+                                <h4 style="font-size: 1rem; font-weight: 600; color: var(--text-secondary);">SHAP Plot Unavailable</h4>
                             </div>
                         {% endif %}
                     </div>
 
                     <!-- LIME Tab Content -->
-                    <div id="content-lime" class="hidden space-y-4">
+                    <div id="content-lime" style="display: none; flex-direction: column; gap: 1rem;">
                         {% if result.lime_plot %}
-                            <div class="bg-slate-950 p-4 rounded-xl border border-slate-800/80 flex items-center justify-center overflow-auto">
-                                <img src="data:image/png;base64,{{ result.lime_plot }}" alt="LIME Local Explanation Plot" class="max-w-full h-auto rounded-lg">
+                            <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; text-align: center;">
+                                <img src="data:image/png;base64,{{ result.lime_plot }}" alt="LIME Local Explanation Plot" style="max-width: 100%; height: auto; border-radius: 0.5rem; background: white;">
                             </div>
-                            <div class="p-3 rounded-lg bg-slate-950 border border-slate-900 text-xs text-slate-400 leading-relaxed">
-                                <span class="font-semibold text-slate-200">LIME Surrogacy Interpretation:</span> A local surrogate model is trained to explain the decision in the immediate neighborhood of this applicant. Features on the **right (positive)** push the classification towards defaulting, whereas features on the **left (negative)** support approval. LIME acts as a second, independent opinion to confirm SHAP's findings.
+                            <div style="background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
+                                <strong style="color: white;">LIME Surrogacy Interpretation:</strong> Features on the <strong>right (positive)</strong> push the classification towards defaulting, whereas features on the <strong>left (negative)</strong> support approval.
                             </div>
                         {% else %}
-                            <div class="flex flex-col items-center justify-center py-16 px-4 bg-slate-950 rounded-xl border border-slate-800/80 text-center">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-11 w-11 text-slate-600 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                                <h4 class="text-sm font-semibold text-slate-300">LIME Explanation Plot Unavailable</h4>
-                                <p class="text-xs text-slate-500 max-w-sm mt-1.5 leading-relaxed">
-                                    LIME explanation plots are generated on-the-fly. Ensure that the required libraries are installed on the server backend.
-                                </p>
+                            <div style="padding: 4rem 2rem; text-align: center; background-color: rgba(255,255,255,0.03); border-radius: 0.75rem; border: 1px dashed var(--border-color);">
+                                <h4 style="font-size: 1rem; font-weight: 600; color: var(--text-secondary);">LIME Plot Unavailable</h4>
                             </div>
                         {% endif %}
                     </div>
@@ -244,96 +164,76 @@
         </div>
 
         <!-- Section: Submitted Applicant Parameters -->
-        <div class="bg-slate-900/60 backdrop-blur-sm p-6 rounded-2xl border border-slate-800 shadow-xl relative overflow-hidden">
-            <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-pink-500 to-indigo-500"></div>
-            <h3 class="text-lg font-bold text-white mb-6">Evaluated Applicant Parameters</h3>
+        <div class="app-card" style="position: relative; overflow: hidden; margin-bottom: 2rem;">
+            <div style="position: absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(to right, #ec4899, #f43f5e);"></div>
+            <h3 style="font-size: 1.25rem; font-weight: 700; color: white; margin-bottom: 1.5rem;">Evaluated Applicant Parameters</h3>
             
-            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-6">
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.5rem;">
                 <!-- Age -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Age</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.age }} years</span>
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Age</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: white;">{{ inputs.age }} years</span>
                 </div>
                 <!-- Income -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Annual Income</span>
-                    <span class="text-sm font-semibold text-white">${{ "{:,.2f}".format(inputs.income) }}</span>
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Annual Income</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: white;">${{ "{:,.2f}".format(inputs.income) }}</span>
                 </div>
                 <!-- Loan Amount -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Loan Amount</span>
-                    <span class="text-sm font-semibold text-white">${{ "{:,.2f}".format(inputs.loanamount) }}</span>
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Loan Amount</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: white;">${{ "{:,.2f}".format(inputs.loanamount) }}</span>
                 </div>
                 <!-- Credit Score -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Credit Score</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.creditscore }} (FICO)</span>
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Credit Score</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: white;">{{ inputs.creditscore }}</span>
                 </div>
                 <!-- Months Employed -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Months Employed</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.monthsemployed }} months</span>
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Months Employed</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: white;">{{ inputs.monthsemployed }}</span>
                 </div>
                 <!-- Open Credit Lines -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Credit Lines</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.numcreditlines }}</span>
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Credit Lines</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: white;">{{ inputs.numcreditlines }}</span>
                 </div>
                 <!-- Interest Rate -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Interest Rate</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.interestrate }}%</span>
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Interest Rate</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: white;">{{ inputs.interestrate }}%</span>
                 </div>
                 <!-- Loan Term -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Loan Term</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.loanterm }} months</span>
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Loan Term</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: white;">{{ inputs.loanterm }} months</span>
                 </div>
                 <!-- DTI Ratio -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">DTI Ratio</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.dtiratio }}</span>
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">DTI Ratio</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: white;">{{ inputs.dtiratio }}</span>
                 </div>
                 <!-- Education -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Education</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.education }}</span>
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Education</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: white;">{{ inputs.education }}</span>
                 </div>
                 <!-- Employment Type -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Employment Type</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.employmenttype }}</span>
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Employment</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: white;">{{ inputs.employmenttype }}</span>
                 </div>
                 <!-- Marital Status -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Marital Status</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.maritalstatus }}</span>
-                </div>
-                <!-- Loan Purpose -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Loan Purpose</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.loanpurpose }}</span>
-                </div>
-                <!-- Has Mortgage -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Has Mortgage</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.hasmortgage }}</span>
-                </div>
-                <!-- Has Dependents -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Has Dependents</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.hasdependents }}</span>
-                </div>
-                <!-- Has Co-signer -->
-                <div class="space-y-1">
-                    <span class="text-xs text-slate-500 block">Has Co-signer</span>
-                    <span class="text-sm font-semibold text-white">{{ inputs.hascosigner }}</span>
+                <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-bottom: 0.25rem;">Marital Status</span>
+                    <span style="font-size: 0.95rem; font-weight: 600; color: white;">{{ inputs.maritalstatus }}</span>
                 </div>
             </div>
             
-            <div class="mt-8 flex items-center justify-between border-t border-slate-800/80 pt-6">
-                <a href="{{ url_for('index') }}" class="text-xs text-indigo-400 hover:text-indigo-300 font-semibold flex items-center gap-1.5 transition-all">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end;">
+                <a href="{{ url_for('app_dashboard') }}" class="btn-primary-glow" style="padding: 0.6rem 1.25rem;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                     Evaluate another applicant
@@ -344,8 +244,8 @@
     </main>
 
     <!-- Footer -->
-    <footer class="border-t border-slate-900 bg-slate-950/80 py-6 text-center text-xs text-slate-500">
-        <div class="max-w-7xl mx-auto px-4">
+    <footer class="arch-footer" style="border-top: 1px solid var(--border-color); padding: 1.5rem 0;">
+        <div class="arch-footer-inner">
             <p>&copy; 2026 LOAN XAI SYSTEM. All rights reserved.</p>
         </div>
     </footer>
@@ -359,19 +259,19 @@
             const contentLime = document.getElementById('content-lime');
 
             if (tab === 'shap') {
-                tabShap.classList.add('bg-indigo-600', 'text-white');
-                tabShap.classList.remove('text-slate-400', 'hover:text-slate-200');
-                tabLime.classList.remove('bg-indigo-600', 'text-white');
-                tabLime.classList.add('text-slate-400', 'hover:text-slate-200');
-                contentShap.classList.remove('hidden');
-                contentLime.classList.add('hidden');
+                tabShap.style.background = 'var(--primary)';
+                tabShap.style.color = 'white';
+                tabLime.style.background = 'transparent';
+                tabLime.style.color = 'var(--text-secondary)';
+                contentShap.style.display = 'flex';
+                contentLime.style.display = 'none';
             } else {
-                tabLime.classList.add('bg-indigo-600', 'text-white');
-                tabLime.classList.remove('text-slate-400', 'hover:text-slate-200');
-                tabShap.classList.remove('bg-indigo-600', 'text-white');
-                tabShap.classList.add('text-slate-400', 'hover:text-slate-200');
-                contentLime.classList.remove('hidden');
-                contentShap.classList.add('hidden');
+                tabLime.style.background = 'var(--primary)';
+                tabLime.style.color = 'white';
+                tabShap.style.background = 'transparent';
+                tabShap.style.color = 'var(--text-secondary)';
+                contentLime.style.display = 'flex';
+                contentShap.style.display = 'none';
             }
         }
     </script>

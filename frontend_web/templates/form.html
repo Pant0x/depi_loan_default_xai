@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Underwriting Suite - LOAN XAI SYSTEM</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Flask Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash-message-data hidden" data-category="{{ category }}" data-message="{{ message }}"></div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Background Glow Elements -->
+    <div class="glow-sphere glow-sphere-1"></div>
+    <div class="glow-sphere glow-sphere-2"></div>
+
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="nav-container" style="max-width: 1400px;">
+            <a href="/" class="logo-section" style="text-decoration:none;">
+                <div class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <span class="logo-text">LOAN XAI SYSTEM</span>
+            </a>
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <div class="nav-links">
+                    <span style="color: var(--text-muted); font-size: 0.85rem;">Officer: <strong style="color:var(--text-primary);">{{ username }}</strong></span>
+                    <a href="/logout" class="nav-link">Log Out</a>
+                </div>
+                <div class="nav-status">
+                    <span class="pulse-indicator"></span>
+                    <span class="status-text">API Active</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="app-container" style="flex: 1;">
+        <div style="margin-bottom: 2.5rem;">
+            <h2 class="main-title" style="font-size: 2.5rem; animation: none;">Explainable Loan Underwriting</h2>
+            <p class="subtitle" style="margin-top: 0.5rem; max-width: 800px;">
+                Evaluate loan default risks in real-time using advanced machine learning models and interpret predictions immediately via localized SHAP visualizations.
+            </p>
+        </div>
+
+        <form action="{{ url_for('result') }}" method="POST" autocomplete="off" style="display: flex; flex-direction: column; gap: 2rem;">
+            
+            <div class="app-grid">
+                <!-- Section 1: Demographics & Employment -->
+                <div class="app-card" style="position: relative; overflow: hidden;">
+                    <div style="position: absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(to right, var(--primary), var(--accent));"></div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                        <span class="xai-badge" style="background-color: rgba(99,102,241,0.1); border-color: rgba(99,102,241,0.2); color: #818cf8;">1</span>
+                        <h3 style="font-size: 1.25rem; font-weight: 700;">Demographics & Career</h3>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Basic personal information and professional background.</p>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="age" class="form-label">Age (years)</label>
+                            <input type="number" name="age" id="age" min="18" max="100" placeholder="35" required class="form-input">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="education" class="form-label">Education Level</label>
+                            <select name="education" id="education" required class="form-input">
+                                <option value="" disabled selected>Please select...</option>
+                                <option value="High School">High School</option>
+                                <option value="Bachelor's">Bachelor's</option>
+                                <option value="Master's">Master's</option>
+                                <option value="PhD">PhD</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="employmenttype" class="form-label">Employment Type</label>
+                            <select name="employmenttype" id="employmenttype" required class="form-input">
+                                <option value="" disabled selected>Please select...</option>
+                                <option value="Full-time">Full-time</option>
+                                <option value="Part-time">Part-time</option>
+                                <option value="Self-employed">Self-employed</option>
+                                <option value="Unemployed">Unemployed</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="monthsemployed" class="form-label">Months Employed</label>
+                            <input type="number" name="monthsemployed" id="monthsemployed" min="0" max="600" placeholder="60" required class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="maritalstatus" class="form-label">Marital Status</label>
+                            <select name="maritalstatus" id="maritalstatus" required class="form-input">
+                                <option value="" disabled selected>Please select...</option>
+                                <option value="Divorced">Divorced</option>
+                                <option value="Married">Married</option>
+                                <option value="Single">Single</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Financial Metrics -->
+                <div class="app-card" style="position: relative; overflow: hidden;">
+                    <div style="position: absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(to right, #a855f7, #ec4899);"></div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                        <span class="xai-badge" style="background-color: rgba(168,85,247,0.1); border-color: rgba(168,85,247,0.2); color: #c084fc;">2</span>
+                        <h3 style="font-size: 1.25rem; font-weight: 700;">Financial Profile</h3>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Current annual income, credit history and loan stats.</p>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="income" class="form-label">Annual Income ($)</label>
+                            <input type="number" name="income" id="income" min="0" step="500" placeholder="55000" required class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="creditscore" class="form-label">Credit Score (FICO)</label>
+                            <input type="number" name="creditscore" id="creditscore" min="300" max="850" placeholder="680" required class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="numcreditlines" class="form-label">Open Credit Lines</label>
+                            <input type="number" name="numcreditlines" id="numcreditlines" min="0" max="30" placeholder="5" required class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="dtiratio" class="form-label">DTI Ratio</label>
+                            <input type="number" name="dtiratio" id="dtiratio" min="0" max="2.0" step="0.01" placeholder="0.35" required class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hasmortgage" class="form-label">Has Mortgage?</label>
+                            <select name="hasmortgage" id="hasmortgage" required class="form-input">
+                                <option value="" disabled selected>Please select...</option>
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Loan Details -->
+                <div class="app-card" style="position: relative; overflow: hidden; grid-column: 1 / -1;">
+                    <div style="position: absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(to right, #ec4899, #f43f5e);"></div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem;">
+                        <span class="xai-badge" style="background-color: rgba(236,72,153,0.1); border-color: rgba(236,72,153,0.2); color: #f472b6;">3</span>
+                        <h3 style="font-size: 1.25rem; font-weight: 700;">Loan Details & Co-signers</h3>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Specify details of the requested loan and risk factors.</p>
+                    
+                    <div class="form-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                        <div class="form-group">
+                            <label for="loanamount" class="form-label">Loan Amount ($)</label>
+                            <input type="number" name="loanamount" id="loanamount" min="0" step="500" placeholder="15000" required class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="interestrate" class="form-label">Interest Rate (%)</label>
+                            <input type="number" name="interestrate" id="interestrate" min="0" max="100" step="0.01" placeholder="12.0" required class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loanterm" class="form-label">Loan Term (months)</label>
+                            <input type="number" name="loanterm" id="loanterm" min="1" max="360" placeholder="36" required class="form-input">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loanpurpose" class="form-label">Loan Purpose</label>
+                            <select name="loanpurpose" id="loanpurpose" required class="form-input">
+                                <option value="" disabled selected>Select...</option>
+                                <option value="Auto">Auto</option>
+                                <option value="Business">Business</option>
+                                <option value="Education">Education</option>
+                                <option value="Home">Home</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hasdependents" class="form-label">Has Dependents?</label>
+                            <select name="hasdependents" id="hasdependents" required class="form-input">
+                                <option value="" disabled selected>Select...</option>
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hascosigner" class="form-label">Has Co-signer?</label>
+                            <select name="hascosigner" id="hascosigner" required class="form-input">
+                                <option value="" disabled selected>Select...</option>
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submission Area -->
+            <div class="app-card" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1.5rem; background: rgba(3, 7, 18, 0.8);">
+                <div style="flex: 1; min-width: 280px;">
+                    <label class="form-label" style="font-size: 1rem; color: white;">Explainable Model Choice</label>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Choose LightGBM or XGBoost to view dynamic SHAP waterfall charts and LIME local explanations.</p>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+                    <div style="display: flex; gap: 0.5rem; background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 0.25rem;">
+                        <label style="cursor: pointer;">
+                            <input type="radio" name="model_type" value="lightgbm" checked style="display: none;" onchange="updateRadioStyles(this)">
+                            <span class="radio-btn" style="display: inline-block; padding: 0.6rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: 0.5rem; transition: all 0.2s; background: var(--primary); color: white;">LightGBM + SHAP</span>
+                        </label>
+                        <label style="cursor: pointer;">
+                            <input type="radio" name="model_type" value="xgboost" style="display: none;" onchange="updateRadioStyles(this)">
+                            <span class="radio-btn" style="display: inline-block; padding: 0.6rem 1rem; font-size: 0.85rem; font-weight: 600; border-radius: 0.5rem; transition: all 0.2s; color: var(--text-secondary);">XGBoost + SHAP</span>
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn-primary-glow" style="padding: 0.85rem 2rem;">
+                        Evaluate Risk
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <footer class="arch-footer" style="border-top: 1px solid var(--border-color); padding: 1.5rem 0;">
+        <div class="arch-footer-inner">
+            <p>&copy; 2026 LOAN XAI SYSTEM. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <div id="toast-container" class="toast-container"></div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        function updateRadioStyles(selected) {
+            const container = selected.closest('div');
+            container.querySelectorAll('.radio-btn').forEach(span => {
+                span.style.background = 'transparent';
+                span.style.color = 'var(--text-secondary)';
+            });
+            const activeSpan = selected.nextElementSibling;
+            activeSpan.style.background = 'var(--primary)';
+            activeSpan.style.color = 'white';
+        }
+    </script>
+</body>
+</html>

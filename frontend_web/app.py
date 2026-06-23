@@ -4,7 +4,7 @@ import threading
 import time
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "xai_super_secret_key_12345")
@@ -68,6 +68,11 @@ def supabase_request(method, endpoint, json_data=None, params=None):
 # ==========================================================================
 # Routes
 # ==========================================================================
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, "static"),
+                               "favicon.svg", mimetype="image/svg+xml")
+
 @app.route("/", methods=["GET"])
 def index():
     """Serves the Landing Page."""

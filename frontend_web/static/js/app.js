@@ -83,7 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
             btnSignup.classList.remove("active");
             authForm.action = "/login";
             formAction.value = "login";
-            btnSubmitText.textContent = "Log In to Suite";
+            btnSubmitText.textContent = "Login";
         });
     }
 

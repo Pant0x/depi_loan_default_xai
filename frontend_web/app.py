@@ -70,10 +70,15 @@ def supabase_request(method, endpoint, json_data=None, params=None):
 # ==========================================================================
 @app.route("/", methods=["GET"])
 def index():
-    """Serves the Unified Landing and Architecture Page."""
+    """Serves the Landing Page."""
     if "user" in session:
         return redirect(url_for("app_dashboard"))
     return render_template("landing.html")
+
+@app.route("/architecture", methods=["GET"])
+def architecture():
+    """Serves the Architecture Page."""
+    return render_template("architecture.html")
 
 @app.route("/signup", methods=["POST"])
 def signup():

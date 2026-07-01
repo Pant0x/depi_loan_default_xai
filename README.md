@@ -103,6 +103,13 @@ python backend_api/test_inference.py
 ### Step 3: Run the Application
 Start both servers in separate terminal sessions:
 
+Before starting the frontend, set your Gemini key:
+
+```bash
+# Windows PowerShell
+$env:GEMINI_API_KEY="your_gemini_api_key"
+```
+
 **Terminal 1 (Backend FastAPI):**
 ```bash
 # From the root directory:
@@ -186,6 +193,10 @@ Render is a developer-friendly platform to host web applications. Since this pro
    - **Value:** *Paste the Backend API URL you copied in the previous step* (e.g., `https://loan-default-xai-backend.onrender.com`)
    - **Key:** `FLASK_SECRET_KEY`
    - **Value:** *Enter any random characters string* (e.g., `a871df91823bcda9a19c90`)
+   - **Key:** `GEMINI_API_KEY`
+   - **Value:** *Your Google Gemini API key (required for the in-app project chatbot)*
+   - **Key:** `GEMINI_MODEL` (optional)
+   - **Value:** `models/gemini-3-flash-preview`
 5. Click **Create Web Service**. 
 
 Once the frontend deployment completes, open the frontend service link to use LOAN XAI SYSTEM in production!

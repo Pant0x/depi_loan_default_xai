@@ -251,6 +251,21 @@
         </div>
     </footer>
 
+    <script id="chatbot-context" type="application/json">
+        {{ {
+            "page": "dashboard",
+            "title": "Risk Analysis Dashboard",
+            "model_type": result.model_type,
+            "probability": result.probability,
+            "prediction": result.prediction,
+            "risk_level": result.risk_level,
+            "top_risk_drivers": result.text_explanation,
+            "applicant": inputs
+        } | tojson }}
+    </script>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+
     <!-- Script to toggle between SHAP and LIME tabs -->
     <script>
         function switchXaiTab(tab) {

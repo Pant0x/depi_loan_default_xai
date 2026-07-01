@@ -1,10 +1,11 @@
 import os
+import json
 import requests
 import threading
 import time
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "xai_super_secret_key_12345")
@@ -15,6 +16,33 @@ BACKEND_API_URL = os.environ.get("BACKEND_API_URL", "http://127.0.0.1:8000")
 # Supabase DB Configuration for Auth (REST API)
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://nceokvawdzxwjzqitszd.supabase.co")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZW9rdmF3ZHp4d2p6cWl0c3pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzM3MjYsImV4cCI6MjA5NzcwOTcyNn0.fNqf3Lq8MkpAwFW3yRFJ2jhHgar1NeDXZ1eLnjYOIJo")
+
+CHATBOT_MODEL = os.environ.get("GEMINI_MODEL", "models/gemini-3-flash-preview")
+CHATBOT_HISTORY_LIMIT = 12
+
+PROJECT_CHATBOT_SYSTEM_PROMPT = """
+You are the official LOAN XAI SYSTEM assistant.
+
+Scope rules:
+- Only answer questions about this project: loan default prediction, underwriting workflow, FastAPI backend, Flask frontend, LightGBM/XGBoost, SHAP/LIME explainability, form fields, and dashboard interpretation.
+- If the user asks about anything outside this project, politely refuse and redirect to project-related help.
+- Never claim external facts as certain unless they are provided in the user context.
+
+Behavior rules:
+- Be concise, practical, and user-friendly.
+- On result pages, explain the current applicant result using provided context (risk level, probability, features, and top drivers).
+- Do not expose secrets or environment variables.
+- If context is missing, ask one targeted follow-up question.
+""".strip()
+
+PROJECT_CHATBOT_KNOWLEDGE = """
+Project facts:
+- The system predicts loan default risk and shows explainability artifacts.
+- Frontend: Flask app with pages for landing, architecture, form, and dashboard results.
+- Backend: FastAPI endpoint /api/v1/predict for inference.
+- Supported models in UI: lightgbm and xgboost.
+- Result view includes: probability, prediction class, risk level, SHAP, LIME, and text explanations.
+""".strip()
 
 # ==========================================================================
 # Keep-Alive Pinger (Render)
@@ -64,6 +92,98 @@ def supabase_request(method, endpoint, json_data=None, params=None):
     elif method == "POST":
         return requests.post(url, headers=headers, json=json_data)
     return None
+
+
+def _extract_genai_text(response_obj):
+    """Extract text across multiple google-genai response shapes."""
+    if response_obj is None:
+        return None
+
+    text = getattr(response_obj, "text", None)
+    if isinstance(text, str) and text.strip():
+        return text.strip()
+
+    candidates = getattr(response_obj, "candidates", None)
+    if candidates:
+        for candidate in candidates:
+            content = getattr(candidate, "content", None)
+            parts = getattr(content, "parts", None)
+            if parts:
+                out = []
+                for part in parts:
+                    piece = getattr(part, "text", None)
+                    if isinstance(piece, str) and piece.strip():
+                        out.append(piece.strip())
+                if out:
+                    return "\n".join(out)
+
+    if isinstance(response_obj, dict):
+        maybe_text = response_obj.get("text")
+        if isinstance(maybe_text, str) and maybe_text.strip():
+            return maybe_text.strip()
+
+    return None
+
+
+def _call_gemini(user_message, page_context, history):
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return (
+            "Chatbot is not configured yet. Please set GEMINI_API_KEY in the frontend environment "
+            "to enable project assistant responses."
+        )
+
+    from google import genai
+
+    history_lines = []
+    for msg in history[-CHATBOT_HISTORY_LIMIT:]:
+        role = msg.get("role", "user")
+        content = str(msg.get("content", "")).strip()
+        if content:
+            history_lines.append(f"{role.upper()}: {content}")
+
+    serialized_context = json.dumps(page_context or {}, ensure_ascii=True)
+    prompt = (
+        f"{PROJECT_CHATBOT_SYSTEM_PROMPT}\n\n"
+        f"{PROJECT_CHATBOT_KNOWLEDGE}\n\n"
+        f"PAGE_CONTEXT_JSON:\n{serialized_context}\n\n"
+        f"RECENT_CHAT:\n" + ("\n".join(history_lines) if history_lines else "(empty)") + "\n\n"
+        f"USER_MESSAGE:\n{user_message}\n\n"
+        "Return only the assistant answer text."
+    )
+
+    client = genai.Client(api_key=api_key)
+
+    # First attempt: follow the interaction-style shape requested by the user.
+    try:
+        interaction = client.interactions.create(
+            model=CHATBOT_MODEL,
+            input=prompt,
+            tools=[{"type": "google_search"}],
+            generation_config={
+                "temperature": 1,
+                "max_output_tokens": 8192,
+                "top_p": 0.95,
+                "thinking_level": "high",
+            },
+        )
+
+        steps = getattr(interaction, "steps", None)
+        if steps:
+            maybe_text = _extract_genai_text(steps[-1])
+            if maybe_text:
+                return maybe_text
+    except Exception as interaction_error:
+        print(f"Chatbot interactions API fallback triggered: {interaction_error}")
+
+    # Reliable fallback: generate_content API.
+    response = client.models.generate_content(model=CHATBOT_MODEL, contents=prompt)
+    final_text = _extract_genai_text(response)
+
+    if final_text:
+        return final_text
+
+    return "I could not generate a response right now. Please try rephrasing your question about this project."
 
 # ==========================================================================
 # Routes
@@ -216,6 +336,42 @@ def result():
     except Exception as e:
         flash(f"An unexpected error occurred: {str(e)}", "danger")
         return redirect(url_for("app_dashboard"))
+
+
+@app.route("/api/chatbot/message", methods=["POST"])
+def chatbot_message():
+    """Project-scoped chatbot endpoint backed by Gemini."""
+    data = request.get_json(silent=True) or {}
+    user_message = str(data.get("message", "")).strip()
+    page_context = data.get("page_context", {})
+
+    if not user_message:
+        return jsonify({"error": "Message is required."}), 400
+
+    chat_history = session.get("chat_history", [])
+    if not isinstance(chat_history, list):
+        chat_history = []
+
+    try:
+        reply = _call_gemini(user_message, page_context, chat_history)
+    except Exception as e:
+        print(f"Chatbot error: {e}")
+        return jsonify({
+            "reply": "I hit a temporary issue while answering. Please try again in a few seconds.",
+            "error": "chat_processing_failed",
+        }), 200
+
+    chat_history.append({"role": "user", "content": user_message})
+    chat_history.append({"role": "assistant", "content": reply})
+    session["chat_history"] = chat_history[-CHATBOT_HISTORY_LIMIT:]
+
+    return jsonify({"reply": reply})
+
+
+@app.route("/api/chatbot/reset", methods=["POST"])
+def chatbot_reset():
+    session.pop("chat_history", None)
+    return jsonify({"ok": True})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

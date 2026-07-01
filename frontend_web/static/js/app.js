@@ -99,3 +99,155 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 });
+
+// ==========================================================================
+// Global Project Chatbot
+// ==========================================================================
+document.addEventListener("DOMContentLoaded", () => {
+    if (document.getElementById("project-chatbot-launcher")) return;
+
+    const contextNode = document.getElementById("chatbot-context");
+    let pageContext = {
+        page: window.location.pathname,
+        title: document.title,
+    };
+
+    if (contextNode && contextNode.textContent) {
+        try {
+            pageContext = JSON.parse(contextNode.textContent);
+        } catch (_) {
+            // Keep default page context if JSON cannot be parsed.
+        }
+    }
+
+    const launcher = document.createElement("button");
+    launcher.id = "project-chatbot-launcher";
+    launcher.className = "chatbot-launcher";
+    launcher.setAttribute("type", "button");
+    launcher.setAttribute("aria-label", "Open project assistant");
+    launcher.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-4l-4 4v-4z" />
+        </svg>
+    `;
+
+    const panel = document.createElement("aside");
+    panel.id = "project-chatbot-panel";
+    panel.className = "chatbot-panel";
+    panel.innerHTML = `
+        <div class="chatbot-header">
+            <div>
+                <div class="chatbot-title">Project Assistant</div>
+                <div class="chatbot-subtitle">LOAN XAI SYSTEM only</div>
+            </div>
+            <button class="chatbot-reset" id="chatbot-reset-btn" type="button">Reset</button>
+        </div>
+        <div class="chatbot-messages" id="chatbot-messages"></div>
+        <div class="chatbot-quick-actions" id="chatbot-quick-actions"></div>
+        <form class="chatbot-input-wrap" id="chatbot-form">
+            <input class="chatbot-input" id="chatbot-input" type="text" autocomplete="off" placeholder="Ask about this project..." />
+            <button class="chatbot-send" id="chatbot-send" type="submit">Send</button>
+        </form>
+    `;
+
+    document.body.appendChild(panel);
+    document.body.appendChild(launcher);
+
+    const messagesEl = document.getElementById("chatbot-messages");
+    const quickActionsEl = document.getElementById("chatbot-quick-actions");
+    const form = document.getElementById("chatbot-form");
+    const input = document.getElementById("chatbot-input");
+    const resetBtn = document.getElementById("chatbot-reset-btn");
+
+    const quickActions = pageContext.page === "dashboard"
+        ? [
+            "Why is this applicant high risk?",
+            "Which feature lowered risk the most?",
+            "Explain SHAP vs LIME for this result",
+            "How can this applicant reduce default risk?",
+        ]
+        : [
+            "What does this project do?",
+            "How does prediction work end to end?",
+            "What is SHAP used for here?",
+            "Which model can I select?",
+        ];
+
+    function addMessage(role, text) {
+        const msg = document.createElement("div");
+        msg.className = `chatbot-message ${role}`;
+        msg.textContent = text;
+        messagesEl.appendChild(msg);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    async function sendMessage(message) {
+        const userText = String(message || "").trim();
+        if (!userText) return;
+
+        addMessage("user", userText);
+        input.value = "";
+        input.disabled = true;
+
+        try {
+            const response = await fetch("/api/chatbot/message", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    message: userText,
+                    page_context: pageContext,
+                }),
+            });
+
+            const payload = await response.json();
+            if (!response.ok) {
+                addMessage("assistant", payload.error || "Unable to answer right now.");
+            } else {
+                addMessage("assistant", payload.reply || "No response generated.");
+            }
+        } catch (_) {
+            addMessage("assistant", "Connection error. Please try again.");
+        } finally {
+            input.disabled = false;
+            input.focus();
+        }
+    }
+
+    quickActions.forEach((label) => {
+        const btn = document.createElement("button");
+        btn.className = "chatbot-quick-btn";
+        btn.type = "button";
+        btn.textContent = label;
+        btn.addEventListener("click", () => sendMessage(label));
+        quickActionsEl.appendChild(btn);
+    });
+
+    addMessage(
+        "assistant",
+        pageContext.page === "dashboard"
+            ? "I can explain this exact applicant result. Ask about risk drivers, SHAP/LIME, or improvement ideas."
+            : "I am your LOAN XAI SYSTEM assistant. Ask me anything about this project."
+    );
+
+    launcher.addEventListener("click", () => {
+        panel.classList.toggle("open");
+        if (panel.classList.contains("open")) {
+            input.focus();
+        }
+    });
+
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        sendMessage(input.value);
+    });
+
+    resetBtn.addEventListener("click", async () => {
+        try {
+            await fetch("/api/chatbot/reset", { method: "POST" });
+        } catch (_) {
+            // Ignore reset errors and reset local UI anyway.
+        }
+        messagesEl.innerHTML = "";
+        addMessage("assistant", "Chat reset. Ask a new question about LOAN XAI SYSTEM.");
+    });
+});

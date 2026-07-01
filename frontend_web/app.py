@@ -17,7 +17,7 @@ BACKEND_API_URL = os.environ.get("BACKEND_API_URL", "http://127.0.0.1:8000")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://nceokvawdzxwjzqitszd.supabase.co")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZW9rdmF3ZHp4d2p6cWl0c3pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzM3MjYsImV4cCI6MjA5NzcwOTcyNn0.fNqf3Lq8MkpAwFW3yRFJ2jhHgar1NeDXZ1eLnjYOIJo")
 
-CHATBOT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
+CHATBOT_MODEL = os.environ.get("GEMINI_MODEL", "models/gemini-3.5-flash")
 CHATBOT_HISTORY_LIMIT = 12
 
 PROJECT_CHATBOT_SYSTEM_PROMPT = """

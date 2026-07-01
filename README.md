@@ -196,7 +196,7 @@ Render is a developer-friendly platform to host web applications. Since this pro
    - **Key:** `GEMINI_API_KEY`
    - **Value:** *Your Google Gemini API key (required for the in-app project chatbot)*
    - **Key:** `GEMINI_MODEL` (optional)
-   - **Value:** `models/gemini-3-flash-preview`
+   - **Value:** `models/gemini-3.5-flash`
 5. Click **Create Web Service**. 
 
 Once the frontend deployment completes, open the frontend service link to use LOAN XAI SYSTEM in production!

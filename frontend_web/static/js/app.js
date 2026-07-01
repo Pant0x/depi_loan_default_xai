@@ -190,6 +190,9 @@ document.addEventListener("DOMContentLoaded", () => {
         input.disabled = true;
 
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 25000);
+
             const response = await fetch("/api/chatbot/message", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -197,16 +200,29 @@ document.addEventListener("DOMContentLoaded", () => {
                     message: userText,
                     page_context: pageContext,
                 }),
+                signal: controller.signal,
             });
+            clearTimeout(timeoutId);
 
-            const payload = await response.json();
+            const raw = await response.text();
+            let payload = {};
+            try {
+                payload = raw ? JSON.parse(raw) : {};
+            } catch (_) {
+                payload = { reply: "Server returned an unexpected response format." };
+            }
+
             if (!response.ok) {
                 addMessage("assistant", payload.error || "Unable to answer right now.");
             } else {
                 addMessage("assistant", payload.reply || "No response generated.");
             }
-        } catch (_) {
-            addMessage("assistant", "Connection error. Please try again.");
+        } catch (error) {
+            if (error && error.name === "AbortError") {
+                addMessage("assistant", "Request timed out. Please try again.");
+            } else {
+                addMessage("assistant", "Connection error. Please try again.");
+            }
         } finally {
             input.disabled = false;
             input.focus();

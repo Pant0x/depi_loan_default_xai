@@ -17,7 +17,7 @@ BACKEND_API_URL = os.environ.get("BACKEND_API_URL", "http://127.0.0.1:8000")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://nceokvawdzxwjzqitszd.supabase.co")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZW9rdmF3ZHp4d2p6cWl0c3pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzM3MjYsImV4cCI6MjA5NzcwOTcyNn0.fNqf3Lq8MkpAwFW3yRFJ2jhHgar1NeDXZ1eLnjYOIJo")
 
-CHATBOT_MODEL = os.environ.get("GEMINI_MODEL", "models/gemini-3-flash-preview")
+CHATBOT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-2.5-flash")
 CHATBOT_HISTORY_LIMIT = 12
 
 PROJECT_CHATBOT_SYSTEM_PROMPT = """
@@ -154,34 +154,44 @@ def _call_gemini(user_message, page_context, history):
 
     client = genai.Client(api_key=api_key)
 
-    # First attempt: follow the interaction-style shape requested by the user.
-    try:
-        interaction = client.interactions.create(
-            model=CHATBOT_MODEL,
-            input=prompt,
-            tools=[{"type": "google_search"}],
-            generation_config={
-                "temperature": 1,
-                "max_output_tokens": 8192,
-                "top_p": 0.95,
-                "thinking_level": "high",
-            },
+    candidate_models = [
+        CHATBOT_MODEL,
+        "gemini-2.5-flash",
+        "gemini-2.0-flash",
+    ]
+
+    # Keep model order but remove duplicates.
+    seen = set()
+    ordered_models = []
+    for model_name in candidate_models:
+        if model_name and model_name not in seen:
+            seen.add(model_name)
+            ordered_models.append(model_name)
+
+    last_error = None
+    for model_name in ordered_models:
+        try:
+            response = client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config={
+                    "temperature": 0.7,
+                    "top_p": 0.95,
+                    "max_output_tokens": 2048,
+                },
+            )
+            final_text = _extract_genai_text(response)
+            if final_text:
+                return final_text
+        except Exception as model_error:
+            last_error = model_error
+            print(f"Chatbot model call failed for {model_name}: {model_error}")
+
+    if last_error:
+        return (
+            "I cannot reach the Gemini model right now. Check GEMINI_API_KEY validity, "
+            "model access, and billing/quota in Google AI Studio."
         )
-
-        steps = getattr(interaction, "steps", None)
-        if steps:
-            maybe_text = _extract_genai_text(steps[-1])
-            if maybe_text:
-                return maybe_text
-    except Exception as interaction_error:
-        print(f"Chatbot interactions API fallback triggered: {interaction_error}")
-
-    # Reliable fallback: generate_content API.
-    response = client.models.generate_content(model=CHATBOT_MODEL, contents=prompt)
-    final_text = _extract_genai_text(response)
-
-    if final_text:
-        return final_text
 
     return "I could not generate a response right now. Please try rephrasing your question about this project."
 

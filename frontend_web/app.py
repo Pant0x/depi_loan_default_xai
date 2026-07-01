@@ -175,9 +175,9 @@ def _call_gemini(user_message, page_context, history):
                 model=model_name,
                 contents=prompt,
                 config={
-                    "temperature": 0.7,
+                    "temperature": 0.4,
                     "top_p": 0.95,
-                    "max_output_tokens": 2048,
+                    "max_output_tokens": 768,
                 },
             )
             final_text = _extract_genai_text(response)

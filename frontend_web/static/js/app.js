@@ -191,7 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 25000);
+            const timeoutId = setTimeout(() => controller.abort(), 90000);
 
             const response = await fetch("/api/chatbot/message", {
                 method: "POST",
@@ -219,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch (error) {
             if (error && error.name === "AbortError") {
-                addMessage("assistant", "Request timed out. Please try again.");
+                addMessage("assistant", "The model is taking longer than expected. Please try again in a moment.");
             } else {
                 addMessage("assistant", "Connection error. Please try again.");
             }

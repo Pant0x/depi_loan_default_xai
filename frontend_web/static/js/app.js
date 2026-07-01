@@ -213,7 +213,10 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (!response.ok) {
-                addMessage("assistant", payload.error || "Unable to answer right now.");
+                addMessage(
+                    "assistant",
+                    payload.error || payload.reply || `Unable to answer right now (HTTP ${response.status}).`
+                );
             } else {
                 addMessage("assistant", payload.reply || "No response generated.");
             }

@@ -19,6 +19,7 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV
 
 CHATBOT_MODEL = os.environ.get("GEMINI_MODEL", "models/gemini-3.5-flash")
 CHATBOT_HISTORY_LIMIT = 12
+CHATBOT_HISTORY_MAX_CHARS = 240
 
 PROJECT_CHATBOT_SYSTEM_PROMPT = """
 You are the official LOAN XAI SYSTEM assistant.
@@ -362,8 +363,15 @@ def chatbot_message():
     if not isinstance(chat_history, list):
         chat_history = []
 
+    # Keep a tiny bounded history to avoid oversized cookie/session headers.
+    slim_history = []
+    for msg in chat_history[-4:]:
+        role = str(msg.get("role", "user"))
+        content = str(msg.get("content", ""))[:CHATBOT_HISTORY_MAX_CHARS]
+        slim_history.append({"role": role, "content": content})
+
     try:
-        reply = _call_gemini(user_message, page_context, chat_history)
+        reply = _call_gemini(user_message, page_context, slim_history)
     except Exception as e:
         print(f"Chatbot error: {e}")
         return jsonify({
@@ -371,9 +379,9 @@ def chatbot_message():
             "error": "chat_processing_failed",
         }), 200
 
-    chat_history.append({"role": "user", "content": user_message})
-    chat_history.append({"role": "assistant", "content": reply})
-    session["chat_history"] = chat_history[-CHATBOT_HISTORY_LIMIT:]
+    slim_history.append({"role": "user", "content": user_message[:CHATBOT_HISTORY_MAX_CHARS]})
+    slim_history.append({"role": "assistant", "content": str(reply)[:CHATBOT_HISTORY_MAX_CHARS]})
+    session["chat_history"] = slim_history[-4:]
 
     return jsonify({"reply": reply})
 

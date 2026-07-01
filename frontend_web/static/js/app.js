@@ -181,6 +181,53 @@ document.addEventListener("DOMContentLoaded", () => {
         messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
+    function createTypingIndicator() {
+        const typing = document.createElement("div");
+        typing.id = "chatbot-typing-indicator";
+        typing.className = "chatbot-message assistant typing";
+        typing.innerHTML = `
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+            <span class="typing-dot"></span>
+        `;
+        messagesEl.appendChild(typing);
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function removeTypingIndicator() {
+        const existing = document.getElementById("chatbot-typing-indicator");
+        if (existing) existing.remove();
+    }
+
+    async function addAssistantMessageAnimated(text) {
+        const msg = document.createElement("div");
+        msg.className = "chatbot-message assistant";
+        msg.textContent = "";
+        messagesEl.appendChild(msg);
+
+        const content = String(text || "");
+        if (!content) {
+            messagesEl.scrollTop = messagesEl.scrollHeight;
+            return;
+        }
+
+        const step = content.length > 500 ? 4 : content.length > 250 ? 3 : 2;
+        const delay = content.length > 500 ? 4 : 10;
+
+        await new Promise((resolve) => {
+            let index = 0;
+            const timer = setInterval(() => {
+                index = Math.min(content.length, index + step);
+                msg.textContent = content.slice(0, index);
+                messagesEl.scrollTop = messagesEl.scrollHeight;
+                if (index >= content.length) {
+                    clearInterval(timer);
+                    resolve();
+                }
+            }, delay);
+        });
+    }
+
     async function sendMessage(message) {
         const userText = String(message || "").trim();
         if (!userText) return;
@@ -188,6 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
         addMessage("user", userText);
         input.value = "";
         input.disabled = true;
+        createTypingIndicator();
 
         try {
             const controller = new AbortController();
@@ -213,20 +261,23 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             if (!response.ok) {
-                addMessage(
-                    "assistant",
+                removeTypingIndicator();
+                await addAssistantMessageAnimated(
                     payload.error || payload.reply || `Unable to answer right now (HTTP ${response.status}).`
                 );
             } else {
-                addMessage("assistant", payload.reply || "No response generated.");
+                removeTypingIndicator();
+                await addAssistantMessageAnimated(payload.reply || "No response generated.");
             }
         } catch (error) {
+            removeTypingIndicator();
             if (error && error.name === "AbortError") {
-                addMessage("assistant", "The model is taking longer than expected. Please try again in a moment.");
+                await addAssistantMessageAnimated("The model is taking longer than expected. Please try again in a moment.");
             } else {
-                addMessage("assistant", "Connection error. Please try again.");
+                await addAssistantMessageAnimated("Connection error. Please try again.");
             }
         } finally {
+            removeTypingIndicator();
             input.disabled = false;
             input.focus();
         }

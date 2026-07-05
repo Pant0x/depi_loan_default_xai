@@ -1,22 +1,50 @@
 import threading
+import csv
+import os
+from datetime import datetime, timezone
 import joblib
 import pickle
 from pathlib import Path
 import pandas as pd
 import numpy as np
 import shap
-import lime.lime_tabular
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import io
 import base64
-from typing import Dict, Any, Tuple, Optional
+from typing import Tuple, Optional, List
 from .schemas import LoanFeatures
 
 class XAIEngine:
     _instance = None
     _lock = threading.Lock()
+
+    AUDIT_LOG_COLUMNS = [
+        "timestamp",
+        "username",
+        "age",
+        "income",
+        "loanamount",
+        "creditscore",
+        "monthsemployed",
+        "numcreditlines",
+        "interestrate",
+        "loanterm",
+        "dtiratio",
+        "education",
+        "employmenttype",
+        "maritalstatus",
+        "loanpurpose",
+        "hasmortgage",
+        "hasdependents",
+        "hascosigner",
+        "probability",
+        "prediction",
+        "risk_level",
+        "shap_plot_generated",
+        "text_explanation",
+    ]
 
     def __new__(cls, *args, **kwargs):
         with cls._lock:
@@ -35,61 +63,41 @@ class XAIEngine:
         else:
             self.artifacts_dir = Path(artifacts_dir)
 
+        self.audit_log_path = Path(__file__).resolve().parent.parent / "logs" / "prediction_audit.csv"
+
         self.lgb_model = None
-        self.xgb_model = None
         self.scaler = None
         self.feature_names = None
         self.shap_explainer = None
-        self.xgb_shap_explainer = None
-        self.lime_explainer = None
         
         self.load_artifacts()
         self._initialized = True
 
     def load_artifacts(self):
-        """Load all ML models, scalers, and feature metadata in a thread-safe manner."""
+        """Load LightGBM model, scaler, feature metadata, and SHAP TreeExplainer."""
         print(f"Loading ML artifacts from {self.artifacts_dir}...")
         
         lgb_path = self.artifacts_dir / "lightgbm_model (1).joblib"
-        xgb_path = self.artifacts_dir / "xgboost_model (1).joblib"
         scaler_path = self.artifacts_dir / "scaler.pkl"
         feature_names_path = self.artifacts_dir / "feature_names.pkl"
 
         if not lgb_path.exists():
             raise FileNotFoundError(f"LightGBM model not found at {lgb_path}")
-        if not xgb_path.exists():
-            raise FileNotFoundError(f"XGBoost model not found at {xgb_path}")
         if not scaler_path.exists():
             raise FileNotFoundError(f"Scaler not found at {scaler_path}")
         if not feature_names_path.exists():
             raise FileNotFoundError(f"Feature names metadata not found at {feature_names_path}")
 
-        # Load models
         self.lgb_model = joblib.load(lgb_path)
-        self.xgb_model = joblib.load(xgb_path)
         
-        # Load scaler and feature names
         with open(scaler_path, "rb") as f:
             self.scaler = pickle.load(f)
         with open(feature_names_path, "rb") as f:
             self.feature_names = pickle.load(f)
 
-        # Initialize TreeExplainers on models
-        # Using check_additivity=False to prevent warning crashes during service operation
         self.shap_explainer = shap.TreeExplainer(self.lgb_model)
-        self.xgb_shap_explainer = shap.TreeExplainer(self.xgb_model)
         
-        # Initialize LIME Tabular Explainer on synthetic background
-        print("Generating synthetic background data for LIME explainer...")
-        X_train_raw = self.generate_synthetic_background()
-        self.lime_explainer = lime.lime_tabular.LimeTabularExplainer(
-            training_data=X_train_raw.values,
-            feature_names=self.feature_names,
-            class_names=["No Default", "Default"],
-            mode="classification"
-        )
-        
-        print("ML artifacts, SHAP explainer, and LIME explainer loaded successfully!")
+        print("LightGBM model and SHAP explainer loaded successfully!")
 
     def transform_to_dataframe(self, input_features: LoanFeatures) -> pd.DataFrame:
         """
@@ -227,17 +235,13 @@ class XAIEngine:
         scaled_df = pd.DataFrame(scaled_data, columns=self.feature_names)
         return scaled_df
 
-    def generate_shap_plot(self, df_raw: pd.DataFrame, df_scaled: pd.DataFrame, model_type: str = "lightgbm") -> Optional[str]:
+    def generate_shap_plot(self, df_raw: pd.DataFrame, df_scaled: pd.DataFrame) -> Optional[str]:
         """
         Generates a local SHAP waterfall plot for a single prediction using TreeExplainer
         and encodes it as a base64 string.
         """
         try:
-            # Select correct explainer
-            explainer = self.xgb_shap_explainer if model_type == "xgboost" else self.shap_explainer
-            
-            # Generate SHAP values for the scaled input row
-            shap_values = explainer(df_scaled)
+            shap_values = self.shap_explainer(df_scaled)
             
             # Construct a clean Explanation object using the raw (unscaled) data for plotting
             # so the labels show real-world values (e.g., age = 35) instead of Z-scores.
@@ -248,116 +252,22 @@ class XAIEngine:
                 feature_names=self.feature_names
             )
 
-            # Draw the plot in headless mode
-            plt.figure(figsize=(10, 6))
+            plt.figure(figsize=(10, 6), facecolor="white")
             shap.plots.waterfall(exp, max_display=10, show=False)
-            
-            # Save the figure to an in-memory buffer
+
             buf = io.BytesIO()
-            plt.savefig(buf, format='png', bbox_inches='tight', dpi=150)
+            plt.savefig(buf, format="png", bbox_inches="tight", dpi=150, facecolor="white")
             plt.close()
             
-            # Encode as base64
-            img_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-            return img_b64
+            return base64.b64encode(buf.getvalue()).decode('utf-8')
         except Exception as e:
             print(f"Error generating SHAP explanation plot: {e}")
             return None
 
-    def generate_synthetic_background(self, n_samples=500) -> pd.DataFrame:
-        """
-        Generates a realistic synthetic raw dataset within valid range constraints
-        and applies feature engineering to match the 36-feature space.
-        """
-        np.random.seed(42)
-        records = []
-        for _ in range(n_samples):
-            age = int(np.random.uniform(18, 75))
-            income = float(np.random.uniform(20000, 150000))
-            loanamount = float(np.random.uniform(5000, 100000))
-            creditscore = int(np.random.uniform(500, 820))
-            monthsemployed = int(np.random.uniform(0, 180))
-            numcreditlines = int(np.random.uniform(1, 15))
-            interestrate = float(np.random.uniform(4.0, 25.0))
-            loanterm = int(np.random.choice([12, 24, 36, 48, 60]))
-            dtiratio = float(np.random.uniform(0.05, 0.60))
-            
-            education = np.random.choice(["High School", "Bachelor's", "Master's", "PhD"])
-            employmenttype = np.random.choice(["Full-time", "Part-time", "Self-employed", "Unemployed"])
-            maritalstatus = np.random.choice(["Single", "Married", "Divorced"])
-            loanpurpose = np.random.choice(["Auto", "Business", "Education", "Home", "Other"])
-            
-            hasmortgage = np.random.choice(["Yes", "No"])
-            hasdependents = np.random.choice(["Yes", "No"])
-            hascosigner = np.random.choice(["Yes", "No"])
-            
-            f = LoanFeatures(
-                age=age, income=income, loanamount=loanamount, creditscore=creditscore,
-                monthsemployed=monthsemployed, numcreditlines=numcreditlines, interestrate=interestrate,
-                loanterm=loanterm, dtiratio=dtiratio, education=education, employmenttype=employmenttype,
-                maritalstatus=maritalstatus, loanpurpose=loanpurpose, hasmortgage=hasmortgage,
-                hasdependents=hasdependents, hascosigner=hascosigner
-            )
-            records.append(f)
-            
-        df_list = [self.transform_to_dataframe(r) for r in records]
-        return pd.concat(df_list, ignore_index=True)
-
-    def generate_lime_plot(self, df_raw: pd.DataFrame, model_type: str) -> Tuple[Optional[str], List[str]]:
-        """
-        Generates a local LIME explanation plot and returns its base64 encoding 
-        along with the top text reasons.
-        """
-        try:
-            # Predict function wrapper for LIME
-            def predict_fn(x):
-                df_x = pd.DataFrame(x, columns=self.feature_names)
-                df_x_scaled = self.scale_features(df_x)
-                if model_type == "xgboost":
-                    return self.xgb_model.predict_proba(df_x_scaled)
-                else:
-                    return self.lgb_model.predict_proba(df_x_scaled)
-
-            # Generate LIME explanation in raw space
-            exp = self.lime_explainer.explain_instance(
-                data_row=df_raw.iloc[0].values,
-                predict_fn=predict_fn,
-                num_features=10
-            )
-
-            # Format the top reasons (bullet points)
-            reasons = []
-            for cond, weight in exp.as_list()[:3]:
-                direction = "increased" if weight > 0 else "decreased"
-                # Use ascii conditions directly
-                reasons.append(f"Condition '{cond}' {direction} default risk by {abs(weight)*100:.1f}%")
-
-            # Draw LIME plot in headless mode
-            fig = exp.as_pyplot_figure()
-            plt.title(f"LIME Local Explanation ({'XGBoost' if model_type == 'xgboost' else 'LightGBM'})", 
-                      fontsize=12, fontweight='bold', pad=15)
-            plt.tight_layout()
-
-            # Save plot to in-memory buffer
-            buf = io.BytesIO()
-            plt.savefig(buf, format='png', bbox_inches='tight', dpi=150)
-            plt.close(fig)
-
-            # Encode as base64
-            img_b64 = base64.b64encode(buf.getvalue()).decode('utf-8')
-            return img_b64, reasons
-        except Exception as e:
-            print(f"Error generating LIME explanation: {e}")
-            return None, []
-
-    def generate_shap_reasons(self, df_scaled: pd.DataFrame, model_type: str = "lightgbm", top_n=3) -> List[str]:
+    def generate_shap_reasons(self, df_scaled: pd.DataFrame, top_n=3) -> List[str]:
         """Generates plain English reasons based on SHAP values."""
         try:
-            # Select the correct explainer
-            explainer = self.xgb_shap_explainer if model_type == "xgboost" else self.shap_explainer
-            
-            # Calculate SHAP values
-            shap_values = explainer.shap_values(df_scaled)
+            shap_values = self.shap_explainer.shap_values(df_scaled)
             if isinstance(shap_values, list):
                 shap_values = shap_values[1]
             
@@ -375,41 +285,96 @@ class XAIEngine:
             print(f"Error generating SHAP text explanation: {e}")
             return []
 
-    def predict_risk(self, input_features: LoanFeatures, model_type: str = "lightgbm") -> Tuple[float, int, str, Optional[str], Optional[str], List[str]]:
-        """
-        Preprocesses inputs, performs risk probability prediction, and generates SHAP and LIME explanations.
-        Returns:
-            probability (float), prediction (int), risk_level (str), 
-            shap_plot_b64 (str or None), lime_plot_b64 (str or None), text_explanation (List[str])
-        """
-        # 1. Transform raw inputs to dataframe with engineered features
-        df_raw = self.transform_to_dataframe(input_features)
+    def _write_prediction_audit(
+        self,
+        input_features: LoanFeatures,
+        probability: float,
+        prediction: int,
+        risk_level: str,
+        shap_plot_b64: Optional[str],
+        text_explanation: List[str],
+        username: Optional[str] = None,
+    ) -> None:
+        """Append one prediction record to the audit CSV (thread-safe)."""
+        row = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "username": username or "",
+            "age": input_features.age,
+            "income": input_features.income,
+            "loanamount": input_features.loanamount,
+            "creditscore": input_features.creditscore,
+            "monthsemployed": input_features.monthsemployed,
+            "numcreditlines": input_features.numcreditlines,
+            "interestrate": input_features.interestrate,
+            "loanterm": input_features.loanterm,
+            "dtiratio": input_features.dtiratio,
+            "education": input_features.education,
+            "employmenttype": input_features.employmenttype,
+            "maritalstatus": input_features.maritalstatus,
+            "loanpurpose": input_features.loanpurpose,
+            "hasmortgage": input_features.hasmortgage,
+            "hasdependents": input_features.hasdependents,
+            "hascosigner": input_features.hascosigner,
+            "probability": probability,
+            "prediction": prediction,
+            "risk_level": risk_level,
+            "shap_plot_generated": "Yes" if shap_plot_b64 else "No",
+            "text_explanation": " | ".join(text_explanation) if text_explanation else "",
+        }
 
-        # 2. Scale features
+        with self._lock:
+            os.makedirs(self.audit_log_path.parent, exist_ok=True)
+            write_header = not self.audit_log_path.exists() or self.audit_log_path.stat().st_size == 0
+            with open(self.audit_log_path, "a", newline="", encoding="utf-8") as audit_file:
+                writer = csv.DictWriter(audit_file, fieldnames=self.AUDIT_LOG_COLUMNS)
+                if write_header:
+                    writer.writeheader()
+                writer.writerow(row)
+
+    def get_latest_audit_record(self, username: str) -> Optional[dict]:
+        """Return the most recent audit row for the given user, or None if unavailable."""
+        if not username:
+            return None
+
+        with self._lock:
+            if not self.audit_log_path.exists():
+                return None
+
+            try:
+                with open(self.audit_log_path, newline="", encoding="utf-8") as audit_file:
+                    rows = list(csv.DictReader(audit_file))
+            except OSError as e:
+                print(f"Audit CSV read failed: {e}")
+                return None
+
+            if not rows:
+                return None
+
+            user_rows = [row for row in rows if row.get("username") == username]
+            if not user_rows:
+                return None
+            return user_rows[-1]
+
+    def predict_risk(
+        self,
+        input_features: LoanFeatures,
+        username: Optional[str] = None,
+    ) -> Tuple[float, int, str, Optional[str], List[str]]:
+        """
+        Preprocesses inputs, performs LightGBM inference, and generates SHAP explanations.
+        Returns:
+            probability (float), prediction (int), risk_level (str),
+            shap_plot_b64 (str or None), text_explanation (List[str])
+        """
+        df_raw = self.transform_to_dataframe(input_features)
         df_scaled = self.scale_features(df_raw)
 
-        # 3. Model inference based on selected type
-        if model_type == "xgboost":
-            prob = float(self.xgb_model.predict_proba(df_scaled)[0, 1])
-        else:
-            # LightGBM requires scaled features input
-            prob = float(self.lgb_model.predict_proba(df_scaled)[0, 1])
+        prob = float(self.lgb_model.predict_proba(df_scaled)[0, 1])
+        shap_plot_b64 = self.generate_shap_plot(df_raw, df_scaled)
+        text_explanation = self.generate_shap_reasons(df_scaled, top_n=10)
 
-        # Generate SHAP waterfall plot
-        shap_plot_b64 = self.generate_shap_plot(df_raw, df_scaled, model_type)
-        
-        # Generate LIME plot
-        lime_plot_b64, lime_reasons = self.generate_lime_plot(df_raw, model_type)
-        
-        # Generate SHAP-based human-readable explanation
-        text_explanation = self.generate_shap_reasons(df_scaled, model_type)
-        if not text_explanation:
-            text_explanation = lime_reasons
-
-        # Calculate prediction binary flag (0.5 threshold)
         prediction = 1 if prob >= 0.5 else 0
 
-        # Define risk levels based on probability
         if prob < 0.25:
             risk_level = "Low Risk"
         elif prob < 0.60:
@@ -417,4 +382,20 @@ class XAIEngine:
         else:
             risk_level = "High Risk"
 
-        return prob, prediction, risk_level, shap_plot_b64, lime_plot_b64, text_explanation
+        try:
+            self._write_prediction_audit(
+                input_features,
+                prob,
+                prediction,
+                risk_level,
+                shap_plot_b64,
+                text_explanation,
+                username=username,
+            )
+        except Exception as e:
+            print(f"Audit log write failed (non-fatal): {e}")
+
+        return prob, prediction, risk_level, shap_plot_b64, text_explanation
+
+# Trigger reload for rebuilt scaler.pkl
+

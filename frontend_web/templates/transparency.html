@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Transparency & XAI - LOAN XAI SYSTEM</title>
+    <meta name="description" content="Technical documentation and transparency overview for the Loan XAI default prediction system.">
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <!-- MathJax for rendering LaTeX math formulas -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .page-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            align-self: flex-start;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            background-color: rgba(217, 70, 239, 0.1);
+            border: 1px solid rgba(217, 70, 239, 0.2);
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            margin-bottom: 1rem;
+        }
+
+        .toggle-container {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+
+        .toggle-btn {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border: none;
+            border-radius: 9999px;
+            padding: 0.95rem 2.25rem;
+            font-family: var(--font-sans);
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.35);
+            transition: all var(--transition-speed) ease;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 35px rgba(217, 70, 239, 0.6);
+        }
+
+        .advanced-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(15px);
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .advanced-section.show {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* SVG flowcharts */
+        .diagram-container {
+            background-color: rgba(3, 7, 18, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 1.25rem;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: auto;
+        }
+
+        .diagram-svg {
+            width: 100%;
+            max-width: 820px;
+            height: auto;
+        }
+
+        .flow-step-rect {
+            fill: rgba(17, 24, 39, 0.85);
+            stroke: var(--border-color);
+            stroke-width: 1.5;
+            rx: 10;
+            ry: 10;
+            transition: all 0.3s ease;
+        }
+
+        .flow-step-rect.active-flask {
+            stroke: var(--accent);
+            filter: drop-shadow(0 0 5px rgba(217, 70, 239, 0.3));
+        }
+
+        .flow-step-rect.active-fastapi {
+            stroke: var(--primary);
+            filter: drop-shadow(0 0 5px rgba(99, 102, 241, 0.3));
+        }
+
+        .flow-step-rect.active-ml {
+            stroke: #10b981;
+            filter: drop-shadow(0 0 5px rgba(16, 185, 129, 0.3));
+        }
+
+        .flow-text {
+            font-family: var(--font-sans);
+            font-size: 11px;
+            fill: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .flow-title {
+            font-family: var(--font-sans);
+            font-size: 13px;
+            fill: var(--text-primary);
+            font-weight: 700;
+        }
+
+        .flow-arrow {
+            stroke: var(--border-color);
+            stroke-width: 2;
+            fill: none;
+            marker-end: url(#arrow);
+        }
+
+        .math-block {
+            background: rgba(3, 7, 18, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: #a5b4fc;
+        }
+
+        .advanced-table-wrapper {
+            overflow-x: auto;
+            border-radius: 0.85rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin: 1rem 0;
+        }
+
+        .advanced-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .advanced-table thead {
+            background-color: rgba(99, 102, 241, 0.08);
+        }
+
+        .advanced-table th {
+            text-align: left;
+            padding: 0.85rem 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            font-size: 0.82rem;
+            text-transform: uppercase;
+        }
+
+        .advanced-table td {
+            padding: 0.75rem 1rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            line-height: 1.5;
+            vertical-align: top;
+        }
+
+        .advanced-table tr:hover td {
+            background-color: rgba(99, 102, 241, 0.03);
+        }
+    </style>
+</head>
+<body class="min-h-full flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+    
+    <!-- Background Glow Elements -->
+    <div class="glow-sphere glow-sphere-1"></div>
+    <div class="glow-sphere glow-sphere-2"></div>
+    <div class="glow-sphere glow-sphere-3"></div>
+
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="nav-container" style="max-width: 1400px;">
+            <a href="/" class="logo-section" style="text-decoration:none;">
+                <div class="logo-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <span class="logo-text">LOAN XAI SYSTEM</span>
+            </a>
+            
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <nav class="nav-links">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/transparency" class="nav-link" style="color: var(--primary); font-weight: 600;">Transparency</a>
+                    <a href="/architecture" class="nav-link">Architecture</a>
+                    {% if username %}
+                        <span style="color: var(--text-muted); font-size: 0.85rem; margin-left: 0.5rem;">
+                            User: <strong style="color:var(--text-primary);">{{ username }}</strong>
+                        </span>
+                        <a href="/logout" class="nav-link" style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.4rem 0.85rem; border-radius: 0.5rem; color: #fca5a5;">Log Out</a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="arch-main" style="padding-top: 4rem;">
+        
+        <!-- Header -->
+        <section class="arch-hero" style="padding-top: 0;">
+            <div class="page-badge">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:2px;"><path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                System Transparency & Explainable AI
+            </div>
+            <h1 class="arch-hero-title">Model Transparency Portal</h1>
+            <p class="arch-hero-subtitle">
+                Complete algorithmic disclosure: Explore how inputs are transformed, risk scores are computed, local explanations are generated, and regulatory compliance is audited.
+            </p>
+        </section>
+
+        <!-- Mode Selector Toggle -->
+        <div class="toggle-container">
+            <button id="toggle-advanced-btn" class="toggle-btn" type="button" aria-expanded="false" aria-controls="advanced-documentation">
+                <span>View Advanced Developer Documentation</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- GENERAL SECTION (Visible by Default)       -->
+        <!-- ========================================== -->
+        <div id="general-section" class="arch-section">
+            <div class="section-number">01</div>
+            <h2 class="arch-section-title">General System Disclosure</h2>
+            <div class="arch-content-card">
+                <p>
+                    LOAN XAI SYSTEM is built on the philosophy of <strong>complete algorithmic transparency</strong>. In traditional financial credit underwriting, credit scores are produced by closed proprietary formulas, often leaving applicants and bank operators in the dark about why a loan was rejected.
+                </p>
+                <p>
+                    This platform exposes all levels of risk scoring:
+                </p>
+                <ul class="detail-list">
+                    <li><strong>Decoupled Architecture:</strong> A fast Python client layer (Flask) provides visual representations, while a high-performance Python FastAPI engine handles the math, data scaling, and model prediction in-memory.</li>
+                    <li><strong>Explainable Decisions:</strong> Instead of simple yes/no outputs, every prediction is accompanied by a game-theoretic decomposition (SHAP values) that shows which personal financial traits helped or hurt the applicant's credit score.</li>
+                    <li><strong>Zero-Database Inference:</strong> The core pipeline is stateless. Data is processed in-memory for security and speed, and logged locally for compliance auditing.</li>
+                </ul>
+
+                <h3 class="subsection-title">Main Request Pipeline Diagram</h3>
+                <p>The diagram below shows the flow of applicant data from the client browser through the backend system to return prediction probabilities and explanations:</p>
+                
+                <div class="diagram-container">
+                    <svg class="diagram-svg" viewBox="0 0 800 240" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--text-muted)" />
+                            </marker>
+                        </defs>
+                        <!-- Node 1: Browser UI -->
+                        <rect x="10" y="70" width="130" height="80" class="flow-step-rect" />
+                        <text x="75" y="105" text-anchor="middle" class="flow-title">1. Client Browser</text>
+                        <text x="75" y="125" text-anchor="middle" class="flow-text">Fills Loan Form</text>
+                        
+                        <path d="M 140 110 L 195 110" class="flow-arrow" />
+                        
+                        <!-- Node 2: Flask Web -->
+                        <rect x="205" y="70" width="140" height="80" class="flow-step-rect active-flask" />
+                        <text x="275" y="105" text-anchor="middle" class="flow-title">2. Flask Frontend</text>
+                        <text x="275" y="125" text-anchor="middle" class="flow-text">app.py / templates</text>
+                        
+                        <path d="M 345 110 L 400 110" class="flow-arrow" />
+                        
+                        <!-- Node 3: FastAPI Backend -->
+                        <rect x="410" y="70" width="160" height="80" class="flow-step-rect active-fastapi" />
+                        <text x="490" y="105" text-anchor="middle" class="flow-title">3. FastAPI Service</text>
+                        <text x="490" y="125" text-anchor="middle" class="flow-text">main.py / uvicorn</text>
+                        
+                        <path d="M 570 110 L 625 110" class="flow-arrow" />
+                        
+                        <!-- Node 4: ML & Explainer -->
+                        <rect x="635" y="70" width="150" height="80" class="flow-step-rect active-ml" />
+                        <text x="710" y="105" text-anchor="middle" class="flow-title">4. XAI Engine</text>
+                        <text x="710" y="125" text-anchor="middle" class="flow-text">LGBM & SHAP</text>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========================================== -->
+        <!-- ADVANCED SECTION (Hidden by Default)       -->
+        <!-- ========================================== -->
+        <div id="advanced-section" class="advanced-section">
+            
+            <!-- Section 2: Mathematical Foundations of SHAP & LIME -->
+            <section id="math-xai" class="arch-section">
+                <div class="section-number">02</div>
+                <h2 class="arch-section-title">Explainability Math & Surrogates</h2>
+                <div class="arch-content-card">
+                    <p>
+                        Our system utilizes two primary algorithms to verify prediction outcomes. The primary tree-based model (LightGBM) is paired with SHAP, while the academic notebooks cross-validate using LIME.
+                    </p>
+                    
+                    <h3 class="subsection-title">1. SHAP (SHapley Additive exPlanations)</h3>
+                    <p>
+                        SHAP is grounded in cooperative game theory. In this context, features of a loan applicant are treated as "players" collaborating to obtain the prediction value \(f(x)\). The Shapley value \(\phi_i\) represents the fair payout (contribution) attributed to feature \(i\).
+                    </p>
+                    <p>
+                        It models prediction output as a linear addition of feature effects:
+                    </p>
+                    <div class="math-block">
+                        \[g(z') = \phi_0 + \sum_{i=1}^{M} \phi_i z'_i\]
+                    </div>
+                    <p>
+                        Where \(z' \in \{0, 1\}^M\) indicates the presence (1) or absence (0) of a feature subset, and \(\phi_0\) is the average model output across all training profiles. The exact marginal contribution is formulated as:
+                    </p>
+                    <div class="math-block">
+                        \[\phi_i = \sum_{S \subseteq F \setminus \{i\}} \frac{|S|!(|F| - |S| - 1)!}{|F|!} \left[ f_x(S \cup \{i\}) - f_x(S) \right]\]
+                    </div>
+                    <p>
+                        For our LightGBM model, computing this exactly would be computationally prohibitive. Therefore, we utilize **TreeExplainer**, which traverses the paths of the tree structures to compute exact Shapley values in polynomial time:
+                    </p>
+                    <div class="math-block">
+                        \[O(T L D^2)\]
+                    </div>
+                    <p>
+                        Where \(T\) is the number of trees, \(L\) is the maximum leaves, and \(D\) is the maximum depth.
+                    </p>
+                    
+                    <h3 class="subsection-title">2. LIME (Local Interpretable Model-agnostic Explanations)</h3>
+                    <p>
+                        Unlike SHAP's global game-theoretic foundation, LIME is model-agnostic and relies on local linear surrogates. To explain a complex model's prediction at \(x\), LIME:
+                    </p>
+                    <ol style="list-style: decimal; padding-left: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem; color: var(--text-secondary);">
+                        <li>Perturbs the input data \(x\) slightly to create a synthetic neighborhood dataset.</li>
+                        <li>Computes prediction outputs from the black-box model \(f\) for all perturbed data points.</li>
+                        <li>Weights the perturbed data points using a similarity/proximity kernel \(\pi_x(z)\) (typically a exponential Gaussian kernel).</li>
+                        <li>Fits an interpretable linear surrogate model \(g\) by minimizing the weighted squared loss:</li>
+                    </ol>
+                    <div class="math-block">
+                        \[\text{Explanation}(x) = \arg\min_{g \in G} L(f, g, \pi_x) + \Omega(g)\]
+                    </div>
+                    <p>
+                        Where \(L(f, g, \pi_x) = \sum_{z, z'} \pi_x(z) (f(z) - g(z'))^2\) and \(\Omega(g)\) is the penalty on model complexity (e.g. LASSO regularization).
+                    </p>
+                </div>
+            </section>
+
+            <!-- Section 3: Model Architecture Overview -->
+            <section id="model-architectures" class="arch-section">
+                <div class="section-number">03</div>
+                <h2 class="arch-section-title">Model Architecture Comparison</h2>
+                <div class="arch-content-card">
+                    <p>
+                        The automated training pipeline evaluates several different machine learning paradigms to establish the optimal underwriting decision boundary:
+                    </p>
+                    
+                    <div class="advanced-table-wrapper">
+                        <table class="advanced-table">
+                            <thead>
+                                <tr>
+                                    <th>Model Class</th>
+                                    <th>Algorithm Details</th>
+                                    <th>Why We Used It</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>LightGBM</strong></td>
+                                    <td>Leaf-wise tree growth gradient boosting. Hyperparameters optimized using Bayesian tuning: learning rate 0.03, num_leaves 31.</td>
+                                    <td>Highly efficient, handles mixed numerical/categorical scales natively, and supports TreeExplainer for fast SHAP outputs.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>XGBoost</strong></td>
+                                    <td>Level-wise tree growth with depth limits. Applies regularization (L1/L2) inside tree leaf weighting.</td>
+                                    <td>Provides robust regularization against outliers and serves as a cross-verification boosting baseline.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tabular MLP</strong></td>
+                                    <td>Multi-Layer Perceptron (Keras). Dense layer configurations with Dropout layers (rate: 0.3) and learning rate scheduling.</td>
+                                    <td>Explores deep non-linear interaction spaces that standard trees might miss. Requires standard scaler.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Soft Voting Ensemble</strong></td>
+                                    <td>Probability-weighted combination of LightGBM, XGBoost, and MLP.</td>
+                                    <td>Combines predictions by averaging probability scores to reduce variance and improve model generalization.</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Logistic Regression</strong></td>
+                                    <td>Linear classifier with L2 weight regularization (Ridge).</td>
+                                    <td>Simplest linear model baseline. Standard feature scaling is integrated directly into the pipeline.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: In-Memory Feature Engineering -->
+            <section id="feature-engineering" class="arch-section">
+                <div class="section-number">04</div>
+                <h2 class="arch-section-title">In-Memory Feature Transformations & Scaling</h2>
+                <div class="arch-content-card">
+                    <p>
+                        The machine learning models expect a 36-dimensional matrix. Raw form inputs consist of only 16 parameters. The [XAIEngine](file:///home/sk/Videos/Karma/depi_loan_default_xai/backend_api/app/xai_engine.py#L19) constructs 27 derived interaction features in-memory before running the scaler:
+                    </p>
+                    
+                    <h3 class="subsection-title">1. Interaction Equations:</h3>
+                    <ul class="detail-list">
+                        <li>
+                            <strong>Estimated Monthly Payment:</strong>
+                            \[\text{monthly\_payment\_est} = \frac{\text{loanamount} \times \frac{\text{interestrate}}{100}}{\text{loanterm} + 1}\]
+                        </li>
+                        <li>
+                            <strong>Affordability Score:</strong>
+                            \[\text{payment\_to\_income} = \frac{\text{monthly\_payment\_est}}{\frac{\text{income}}{12} + 1}\]
+                        </li>
+                        <li>
+                            <strong>Stress Index:</strong>
+                            \[\text{debt\_burden\_score} = \text{dtiratio} \times \text{interestrate}\]
+                        </li>
+                        <li>
+                            <strong>Composite Risk Metric:</strong>
+                            \[\text{risk\_score} = 0.40 \times \left(1 - \frac{\text{creditscore} - 300}{550}\right) + 0.35 \times \text{dtiratio} + 0.25 \times \frac{\text{interestrate}}{30}\]
+                        </li>
+                    </ul>
+
+                    <h3 class="subsection-title">2. Feature Scaling Mechanics</h3>
+                    <p>
+                        For linear baseline models (Logistic Regression) and neural networks (MLPs), variables with large scales (such as Income or Loan Amount) would dominate gradient weights. Therefore, we fit a <strong>StandardScaler</strong> on the training features.
+                    </p>
+                    <p>
+                        Each feature value \(x\) is transformed by subtracting its training mean \(\mu\) and dividing by its standard deviation \(\sigma\):
+                    </p>
+                    <div class="math-block">
+                        \[z = \frac{x - \mu}{\sigma}\]
+                    </div>
+                    <p>
+                        <em>Note: Tree-based models like LightGBM and XGBoost are invariant to monotonic transformations and do not require scaling to calculate splits, but the standardized scaling is maintained globally for consistency in the pipeline.</em>
+                    </p>
+                </div>
+            </section>
+
+            <!-- Section 5: Audit Logging Flowchart -->
+            <section id="audit-flow" class="arch-section">
+                <div class="section-number">05</div>
+                <h2 class="arch-section-title">Audit Logging and Database Trace</h2>
+                <div class="arch-content-card">
+                    <p>
+                        Compliance is maintained through a dual logging trace: User authentication is stored in a remote PostgreSQL database via Supabase, while credit decisions are logged to a local CSV audit ledger.
+                    </p>
+                    
+                    <h3 class="subsection-title">Security & Audit Flowchart</h3>
+                    <p>This layout visualizes how authentication queries are routed and how predictions are locked to the audit CSV:</p>
+                    
+                    <div class="diagram-container">
+                        <svg class="diagram-svg" viewBox="0 0 800 240" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                                    <path d="M 0 0 L 10 5 L 0 10 z" fill="var(--text-muted)" />
+                                </marker>
+                            </defs>
+                            
+                            <!-- Flask Auth Request -->
+                            <rect x="20" y="20" width="160" height="70" class="flow-step-rect active-flask" />
+                            <text x="100" y="50" text-anchor="middle" class="flow-title">Flask Authentication</text>
+                            <text x="100" y="65" text-anchor="middle" class="flow-text">User signs up / logs in</text>
+                            
+                            <path d="M 180 55 L 260 55" class="flow-arrow" />
+                            
+                            <!-- Supabase Database -->
+                            <rect x="270" y="20" width="160" height="70" class="flow-step-rect" style="stroke: #10b981;" />
+                            <text x="350" y="50" text-anchor="middle" class="flow-title">Supabase PostgreSQL</text>
+                            <text x="350" y="65" text-anchor="middle" class="flow-text">Stores encrypted logins</text>
+                            
+                            <!-- Underwriting Prediction -->
+                            <rect x="20" y="140" width="160" height="70" class="flow-step-rect active-fastapi" />
+                            <text x="100" y="170" text-anchor="middle" class="flow-title">FastAPI Prediction</text>
+                            <text x="100" y="185" text-anchor="middle" class="flow-text">Run ML risk scoring</text>
+                            
+                            <path d="M 180 175 L 260 175" class="flow-arrow" />
+                            
+                            <!-- Audit CSV Logs -->
+                            <rect x="270" y="140" width="170" height="70" class="flow-step-rect active-ml" />
+                            <text x="355" y="170" text-anchor="middle" class="flow-title">prediction_audit.csv</text>
+                            <text x="355" y="185" text-anchor="middle" class="flow-text">Locks parameters & SHAP values</text>
+                            
+                            <!-- Explanatory Bracket -->
+                            <path d="M 450 175 L 530 175" class="flow-arrow" />
+                            <rect x="540" y="140" width="240" height="70" class="flow-step-rect" />
+                            <text x="660" y="170" text-anchor="middle" class="flow-title">Regulatory Verification</text>
+                            <text x="660" y="185" text-anchor="middle" class="flow-text">Auditors read CSV to verify biases</text>
+                        </svg>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="arch-footer" style="border-top: 1px solid var(--border-color); padding: 1.5rem 0;">
+        <div class="arch-footer-inner">
+            <p>&copy; 2026 LOAN XAI SYSTEM. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Interactive script to toggle Advanced Documentation section -->
+    <script>
+        function toggleAdvanced() {
+            const advancedSec = document.getElementById("advanced-section");
+            const btn = document.getElementById("toggle-advanced-btn");
+            const label = btn.querySelector("span");
+            const arrow = btn.querySelector("svg");
+            
+            if (!advancedSec) return;
+
+            const isExpanded = btn.getAttribute("aria-expanded") === "true";
+            
+            if (isExpanded) {
+                // Hide advanced documentation
+                advancedSec.classList.remove("show");
+                btn.setAttribute("aria-expanded", "false");
+                label.textContent = "View Advanced Developer Documentation";
+                arrow.style.transform = "rotate(0deg)";
+                
+                // Allow transition to finish before display: none
+                setTimeout(() => {
+                    if (btn.getAttribute("aria-expanded") === "false") {
+                        advancedSec.style.display = "none";
+                    }
+                }, 500);
+            } else {
+                // Show advanced documentation
+                advancedSec.style.display = "flex";
+                btn.setAttribute("aria-expanded", "true");
+                label.textContent = "Hide Advanced Developer Documentation";
+                arrow.style.transform = "rotate(180deg)";
+                
+                // Trigger transitions
+                requestAnimationFrame(() => {
+                    advancedSec.classList.add("show");
+                });
+            }
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const btn = document.getElementById("toggle-advanced-btn");
+            if (btn) {
+                btn.addEventListener("click", toggleAdvanced);
+            }
+        });
+    </script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

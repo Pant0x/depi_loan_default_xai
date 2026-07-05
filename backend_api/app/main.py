@@ -1,6 +1,7 @@
+from typing import Optional
+
 from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 from .schemas import LoanFeatures, LoanPredictResponse
 from .xai_engine import XAIEngine
 from contextlib import asynccontextmanager
@@ -70,7 +71,7 @@ app.add_middleware(
 def health_check():
     """Simple API healthcheck."""
     global engine
-    if engine is None or engine.lgb_model is None or engine.xgb_model is None:
+    if engine is None or engine.lgb_model is None:
         return {"status": "unhealthy", "message": "ML models not loaded"}
     return {"status": "healthy", "message": "API and ML models are fully operational"}
 
@@ -82,18 +83,14 @@ def health_check():
 )
 async def predict_loan_default(
     features: LoanFeatures,
-    model_type: str = Query(
-        "lightgbm",
-        description="ML model to use for inference ('lightgbm' or 'xgboost')"
-    )
+    username: Optional[str] = Query(None),
 ):
     """
-    Accepts loan applicant details, runs machine learning inference, and returns 
+    Accepts loan applicant details, runs LightGBM inference, and returns 
     the probability of default, prediction class, risk level, and a base64-encoded SHAP waterfall plot.
     """
     global engine
     
-    # 1. Ensure engine is initialized
     if engine is None:
         try:
             engine = XAIEngine()
@@ -103,31 +100,50 @@ async def predict_loan_default(
                 detail=f"Inference engine is not initialized. Model load failed: {str(e)}"
             )
 
-    # 2. Validate model type
-    model_type = model_type.lower().strip()
-    if model_type not in ["lightgbm", "xgboost"]:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid model_type. Choose either 'lightgbm' or 'xgboost'."
-        )
-
-    # 3. Perform inference and explanation
     try:
-        prob, pred, risk_level, shap_plot, lime_plot, text_explanation = engine.predict_risk(features, model_type=model_type)
+        prob, pred, risk_level, shap_plot, text_explanation = engine.predict_risk(
+            features, username=username
+        )
         
         return LoanPredictResponse(
             probability=prob,
             prediction=pred,
             risk_level=risk_level,
-            model_type=model_type,
+            model_type="lightgbm",
             shap_plot=shap_plot,
-            lime_plot=lime_plot,
             text_explanation=text_explanation
         )
     except Exception as e:
-        # Log the full error on the server
         print(f"Error during inference request: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred during inference processing: {str(e)}"
         )
+
+
+@app.get(
+    "/api/v1/audit/latest",
+    status_code=status.HTTP_200_OK,
+    summary="Get Latest Audit Record for User",
+)
+async def get_latest_audit_record(username: str = Query(..., min_length=1)):
+    """Return the most recent prediction audit row for the given username."""
+    global engine
+
+    if engine is None:
+        try:
+            engine = XAIEngine()
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Inference engine is not initialized. Model load failed: {str(e)}"
+            )
+
+    record = engine.get_latest_audit_record(username)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No audit record found for this user.",
+        )
+
+    return record

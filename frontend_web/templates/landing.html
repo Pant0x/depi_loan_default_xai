@@ -44,14 +44,22 @@
 
     <!-- Header / Navbar -->
     <header class="navbar">
-        <div class="nav-container">
-            <div class="logo-section">
+        <div class="nav-container" style="max-width: 1400px;">
+            <a href="/" class="logo-section" style="text-decoration:none;">
                 <div class="logo-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     </svg>
                 </div>
                 <span class="logo-text">LOAN XAI SYSTEM</span>
+            </a>
+            
+            <div style="display: flex; align-items: center; gap: 1.5rem;">
+                <nav class="nav-links">
+                    <a href="/" class="nav-link" style="color: var(--primary); font-weight: 600;">Home</a>
+                    <a href="/transparency" class="nav-link">Transparency</a>
+                    <a href="/architecture" class="nav-link">Architecture</a>
+                </nav>
             </div>
         </div>
     </header>

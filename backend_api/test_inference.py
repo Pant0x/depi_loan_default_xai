@@ -1,8 +1,6 @@
 import sys
-import os
 from pathlib import Path
 
-# Add the parent directory to the path so we can import the app
 current_dir = Path(__file__).resolve().parent
 sys.path.append(str(current_dir))
 
@@ -11,11 +9,9 @@ from app.xai_engine import XAIEngine
 
 def run_test():
     print("Initializing XAI Inference Engine...")
-    # Initialize engine with the absolute path of the artifacts directory
     artifacts_dir = current_dir / "artifacts"
     engine = XAIEngine(artifacts_dir=artifacts_dir)
     
-    # Define a test sample
     sample = LoanFeatures(
         age=35,
         income=65000.0,
@@ -35,40 +31,17 @@ def run_test():
         hascosigner="No"
     )
     
-    print("\n--- Testing LightGBM Model ---")
+    print("\n--- Testing LightGBM + SHAP Pipeline ---")
     try:
-        prob, pred, risk_level, shap_plot, lime_plot, text_exp = engine.predict_risk(sample, model_type="lightgbm")
+        prob, pred, risk_level, shap_plot, text_exp = engine.predict_risk(sample)
         print(f"Result: Probability={prob:.5f}, Prediction={pred}, Risk={risk_level}")
         if shap_plot:
             print(f"Success! SHAP Plot generated. Base64 length: {len(shap_plot)}")
         else:
             print("WARNING: SHAP Plot was not generated.")
-        if lime_plot:
-            print(f"Success! LIME Plot generated. Base64 length: {len(lime_plot)}")
-        else:
-            print("WARNING: LIME Plot was not generated.")
         print(f"Text explanation: {text_exp}")
     except Exception as e:
-        print(f"FAILED LightGBM test: {e}")
-        import traceback
-        traceback.print_exc()
-        return False
-
-    print("\n--- Testing XGBoost Model ---")
-    try:
-        prob, pred, risk_level, shap_plot, lime_plot, text_exp = engine.predict_risk(sample, model_type="xgboost")
-        print(f"Result: Probability={prob:.5f}, Prediction={pred}, Risk={risk_level}")
-        if shap_plot:
-            print(f"Success! SHAP Plot generated for XGBoost. Base64 length: {len(shap_plot)}")
-        else:
-            print("WARNING: SHAP Plot was not generated for XGBoost.")
-        if lime_plot:
-            print(f"Success! LIME Plot generated for XGBoost. Base64 length: {len(lime_plot)}")
-        else:
-            print("WARNING: LIME Plot was not generated for XGBoost.")
-        print(f"Text explanation: {text_exp}")
-    except Exception as e:
-        print(f"FAILED XGBoost test: {e}")
+        print(f"FAILED inference test: {e}")
         import traceback
         traceback.print_exc()
         return False

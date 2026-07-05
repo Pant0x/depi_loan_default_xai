@@ -142,6 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="chatbot-header-actions" style="display:flex;align-items:center;gap:0.45rem;">
                 <button class="chatbot-tts-toggle chatbot-reset" id="chatbot-tts-toggle" type="button" aria-label="Enable voice narration" title="Voice narration off">🔇</button>
+                <button class="chatbot-reset" id="chatbot-expand-toggle" type="button" aria-label="Toggle size" title="Expand chat">⛶</button>
                 <button class="chatbot-reset" id="chatbot-reset-btn" type="button">Reset</button>
             </div>
         </div>
@@ -169,6 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const resetBtn = document.getElementById("chatbot-reset-btn");
     const micBtn = document.getElementById("chatbot-mic-btn");
     const ttsToggleBtn = document.getElementById("chatbot-tts-toggle");
+    const expandToggleBtn = document.getElementById("chatbot-expand-toggle");
 
     let isTTSEnabled = false;
     let speechRecognition = null;
@@ -490,6 +492,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 : "Chat reset. Submit a loan application for evaluation, then consult the Credit Officer."
         );
     });
+
+    if (expandToggleBtn) {
+        expandToggleBtn.addEventListener("click", () => {
+            panel.classList.toggle("expanded");
+            const isExpanded = panel.classList.contains("expanded");
+            expandToggleBtn.textContent = isExpanded ? "🗗" : "⛶";
+            expandToggleBtn.title = isExpanded ? "Collapse chat" : "Expand chat";
+        });
+    }
 });
 
 // ==========================================================================

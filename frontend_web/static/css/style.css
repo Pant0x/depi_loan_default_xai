@@ -1887,3 +1887,690 @@ select.form-input option {
         bottom: 0.85rem;
     }
 }
+
+/* ==========================================================================
+   Risk Diagnostics Panel (Dashboard)
+   ========================================================================== */
+.risk-diagnostics-panel {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    background: linear-gradient(
+        145deg,
+        rgba(17, 24, 39, 0.75) 0%,
+        rgba(99, 102, 241, 0.06) 50%,
+        rgba(217, 70, 239, 0.04) 100%
+    );
+}
+
+.risk-diagnostics-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, var(--primary), var(--accent));
+}
+
+.risk-diagnostics-header {
+    position: relative;
+    z-index: 1;
+}
+
+.risk-diagnostics-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+}
+
+.risk-diagnostics-subtitle {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-top: 0.35rem;
+    line-height: 1.5;
+    max-width: 52ch;
+}
+
+.diagnostics-tab-switcher {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.35rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 9999px;
+    position: relative;
+    z-index: 1;
+    width: fit-content;
+    max-width: 100%;
+}
+
+.diagnostics-tab-btn {
+    appearance: none;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.55rem 1.1rem;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition:
+        color var(--transition-speed) ease,
+        background var(--transition-speed) ease,
+        border-color var(--transition-speed) ease,
+        box-shadow var(--transition-speed) ease,
+        transform var(--transition-speed) ease;
+    white-space: nowrap;
+}
+
+.diagnostics-tab-btn:hover {
+    color: var(--text-primary);
+    border-color: rgba(99, 102, 241, 0.25);
+    background: rgba(99, 102, 241, 0.08);
+    box-shadow: 0 0 18px rgba(99, 102, 241, 0.15);
+}
+
+.diagnostics-tab-btn.active {
+    color: white;
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.35), rgba(217, 70, 239, 0.22));
+    border-color: rgba(99, 102, 241, 0.45);
+    box-shadow: 0 0 22px var(--primary-glow), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.diagnostic-panel-view {
+    position: relative;
+    z-index: 1;
+}
+
+.diagnostic-panel-view.active {
+    animation: diagnosticViewFade 0.35s ease;
+}
+
+@keyframes diagnosticViewFade {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.academic-shap-container {
+    background-color: var(--bg-primary);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    text-align: center;
+}
+
+.academic-shap-image {
+    max-width: 100%;
+    height: auto;
+    background: white;
+    border-radius: 0.5rem;
+}
+
+.academic-shap-caption {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-top: 1rem;
+}
+
+.academic-shap-caption strong {
+    color: var(--text-primary);
+}
+
+.academic-shap-caption .text-risk {
+    color: #fca5a5;
+}
+
+.academic-shap-caption .text-boost {
+    color: #7dd3fc;
+}
+
+.visual-diagnostics-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+    padding: 1.5rem 0;
+}
+
+.diagnostics-wheel-section {
+    position: relative;
+    width: 330px;
+    height: 330px;
+    flex-shrink: 0;
+}
+
+#diagnostics-wheel {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+.diagnostics-wheel-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background: rgba(18, 18, 28, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), inset 0 0 15px rgba(255, 255, 255, 0.04);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.85rem;
+    pointer-events: none;
+    z-index: 10;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.wheel-center-verdict {
+    font-size: 0.85rem;
+    font-weight: 750;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+}
+
+.wheel-center-value {
+    font-size: 1.6rem;
+    font-weight: 850;
+    color: var(--text-primary);
+    margin: 0.25rem 0;
+    line-height: 1.1;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+}
+
+.wheel-center-label {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    line-height: 1.3;
+    max-width: 130px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.wheel-wedge {
+    cursor: pointer;
+    transition: filter 0.25s ease, opacity 0.25s ease, transform 0.25s ease;
+    transform-origin: 150px 150px;
+    opacity: 0.75;
+}
+
+.wheel-wedge:hover, .wheel-wedge.active {
+    opacity: 1;
+    filter: drop-shadow(0 0 10px var(--glow-color));
+    transform: scale(1.05);
+}
+
+.diagnostics-wheel-legend {
+    flex-grow: 1;
+    min-width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    max-height: 335px;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+.diagnostics-wheel-legend::-webkit-scrollbar {
+    width: 5px;
+}
+
+.diagnostics-wheel-legend::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 9999px;
+}
+
+.legend-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 0.95rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    border-radius: 0.5rem;
+    transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease;
+    cursor: pointer;
+}
+
+.legend-list-item:hover, .legend-list-item.active {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: var(--hover-border);
+}
+
+.legend-item-left {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.legend-dot--risk {
+    background: #f43f5e;
+    box-shadow: 0 0 8px #f43f5e;
+}
+
+.legend-dot--boost {
+    background: #22d3ee;
+    box-shadow: 0 0 8px #22d3ee;
+}
+
+.legend-badge {
+    font-size: 0.82rem;
+    font-weight: 750;
+    padding: 0.25rem 0.65rem;
+    border-radius: 9999px;
+    flex-shrink: 0;
+}
+
+.legend-badge--risk {
+    color: #fda4af;
+    background: rgba(244, 63, 94, 0.15);
+    border: 1px solid rgba(244, 63, 94, 0.25);
+}
+
+.legend-badge--boost {
+    color: #67e8f9;
+    background: rgba(34, 211, 238, 0.12);
+    border: 1px solid rgba(34, 211, 238, 0.18);
+}
+
+@keyframes riskBarGrow {
+    from {
+        width: 0;
+    }
+
+    to {
+        width: var(--bar-target, 0%);
+    }
+}
+
+.risk-factor-effect {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+}
+
+.risk-diagnostics-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    padding: 1rem 1.15rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-color);
+    border-radius: 0.75rem;
+    position: relative;
+    z-index: 1;
+}
+
+.risk-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+}
+
+.risk-legend-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 9999px;
+    flex-shrink: 0;
+}
+
+.risk-legend-item--risk .risk-legend-dot {
+    background: linear-gradient(135deg, #f43f5e, #ec4899);
+    box-shadow: 0 0 8px rgba(244, 63, 94, 0.5);
+}
+
+.risk-legend-item--boost .risk-legend-dot {
+    background: linear-gradient(135deg, var(--primary), #22d3ee);
+    box-shadow: 0 0 8px var(--primary-glow);
+}
+
+.risk-diagnostics-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 0.75rem;
+    padding: 3.5rem 2rem;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed var(--border-color);
+    border-radius: 1rem;
+    color: var(--text-muted);
+}
+
+.risk-diagnostics-empty svg {
+    opacity: 0.45;
+    margin-bottom: 0.25rem;
+}
+
+.risk-diagnostics-empty h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.risk-diagnostics-empty p {
+    font-size: 0.85rem;
+    max-width: 36ch;
+    line-height: 1.55;
+}
+
+@media (max-width: 640px) {
+    .diagnostics-tab-switcher {
+        width: 100%;
+    }
+
+    .diagnostics-tab-btn {
+        flex: 1;
+        text-align: center;
+        padding-inline: 0.75rem;
+        font-size: 0.76rem;
+    }
+
+    .risk-factor-card-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .risk-diagnostics-legend {
+        flex-direction: column;
+        gap: 0.65rem;
+    }
+}
+
+/* ==========================================================================
+   Interactive Credit Simulator (Dashboard)
+   ========================================================================== */
+.credit-simulator-panel {
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 2rem;
+    background: linear-gradient(
+        145deg,
+        rgba(17, 24, 39, 0.75) 0%,
+        rgba(99, 102, 241, 0.05) 45%,
+        rgba(16, 185, 129, 0.04) 100%
+    );
+}
+
+.credit-simulator-accent {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(to right, #10b981, var(--primary), var(--accent));
+}
+
+.credit-simulator-header {
+    margin-bottom: 1.75rem;
+}
+
+.credit-simulator-title {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.credit-simulator-subtitle {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-top: 0.35rem;
+    line-height: 1.5;
+    max-width: 60ch;
+}
+
+.credit-simulator-grid {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 2rem;
+    align-items: stretch;
+}
+
+.simulator-sliders {
+    display: flex;
+    flex-direction: column;
+    gap: 1.35rem;
+}
+
+.simulator-slider-group {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1rem 1.15rem;
+    transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+
+.simulator-slider-group:hover {
+    border-color: rgba(99, 102, 241, 0.28);
+    box-shadow: 0 8px 24px rgba(99, 102, 241, 0.08);
+}
+
+.simulator-slider-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.simulator-slider-value {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+
+.simulator-range {
+    width: 100%;
+    height: 0.45rem;
+    appearance: none;
+    -webkit-appearance: none;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.08);
+    outline: none;
+    cursor: pointer;
+}
+
+.simulator-range::-webkit-slider-thumb {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 16px var(--primary-glow);
+    cursor: pointer;
+    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+}
+
+.simulator-range::-webkit-slider-thumb:hover {
+    transform: scale(1.12);
+    box-shadow: 0 0 22px rgba(217, 70, 239, 0.45);
+}
+
+.simulator-range::-moz-range-thumb {
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 9999px;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    box-shadow: 0 0 16px var(--primary-glow);
+    cursor: pointer;
+}
+
+.simulation-results-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 0.85rem;
+    padding: 2rem 1.5rem;
+    border-radius: 1.25rem;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition:
+        border-color 0.45s ease,
+        box-shadow 0.45s ease,
+        background 0.45s ease;
+    min-height: 320px;
+}
+
+.simulation-results-panel--approve {
+    border-color: rgba(16, 185, 129, 0.35);
+    background: linear-gradient(145deg, rgba(16, 185, 129, 0.12), rgba(6, 95, 70, 0.08));
+    box-shadow: 0 0 40px rgba(16, 185, 129, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.simulation-results-panel--reject {
+    border-color: rgba(239, 68, 68, 0.35);
+    background: linear-gradient(145deg, rgba(239, 68, 68, 0.12), rgba(153, 27, 27, 0.08));
+    box-shadow: 0 0 40px rgba(239, 68, 68, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.simulation-results-panel--medium {
+    border-color: rgba(245, 158, 11, 0.35);
+    background: linear-gradient(145deg, rgba(245, 158, 11, 0.12), rgba(180, 83, 9, 0.08));
+    box-shadow: 0 0 40px rgba(245, 158, 11, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.simulation-results-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+}
+
+.simulation-verdict {
+    font-size: 1.15rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: var(--text-primary);
+    transition: color 0.45s ease;
+}
+
+.simulation-results-panel--approve .simulation-verdict {
+    color: #6ee7b7;
+    text-shadow: 0 0 18px rgba(16, 185, 129, 0.35);
+}
+
+.simulation-results-panel--reject .simulation-verdict {
+    color: #fca5a5;
+    text-shadow: 0 0 18px rgba(239, 68, 68, 0.35);
+}
+
+.simulation-results-panel--medium .simulation-verdict {
+    color: #fcd34d;
+    text-shadow: 0 0 18px rgba(245, 158, 11, 0.3);
+}
+
+.simulation-probability {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+}
+
+.simulation-probability-value {
+    font-size: 2.75rem;
+    font-weight: 800;
+    line-height: 1;
+    color: white;
+    font-variant-numeric: tabular-nums;
+    transition: text-shadow 0.45s ease, color 0.45s ease;
+}
+
+.simulation-results-panel--approve .simulation-probability-value {
+    text-shadow: 0 0 28px rgba(16, 185, 129, 0.45);
+}
+
+.simulation-results-panel--reject .simulation-probability-value {
+    text-shadow: 0 0 28px rgba(239, 68, 68, 0.45);
+}
+
+.simulation-results-panel--medium .simulation-probability-value {
+    text-shadow: 0 0 28px rgba(245, 158, 11, 0.4);
+}
+
+.simulation-probability-caption {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.simulation-risk-level {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    padding: 0.35rem 0.85rem;
+    border-radius: 9999px;
+    border: 1px solid var(--border-color);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.simulation-status {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 0.35rem;
+}
+
+@media (max-width: 960px) {
+    .credit-simulator-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .simulation-results-panel {
+        min-height: 240px;
+    }
+}

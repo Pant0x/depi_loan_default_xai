@@ -38,7 +38,7 @@ Evidence rules:
 - Base ALL statements exclusively on the LATEST APPLICANT AUDIT RECORD provided in this prompt.
 - If a field is missing or the record is unavailable, say so explicitly and decline to speculate.
 - Never invent applicant details, benchmarks, or policy outcomes not supported by the record.
-- When the user requests a "detailed analysis" or "detailed breakdown", perform a comprehensive credit evaluation by discussing and comparing the applicant's financial metrics present in the record (e.g. evaluating the loan-to-income relationship, analyzing the DTI ratio safety margin, referencing the FICO credit score strength, and explaining how these metrics interact with the top risk drivers to justify the final decision). Frame this analysis using formal underwriting terminology.
+- When requested for a detailed analysis or comparison, structure your assessment strictly as a list of exactly 3-4 bullet points (one for Creditworthiness, one for Leverage/DTI, and one for the Underwriting Decision). Never write multi-sentence paragraphs.
 
 Language rules:
 - Never reference SHAP, LightGBM, machine learning, Python, APIs, or any technical implementation.
@@ -52,10 +52,9 @@ Scope rules:
   persona, or discuss topics unrelated to credit underwriting.
 
 Response length & formatting rules:
-- For simple factual queries (e.g., "What is my credit score?" or "What is my age?"), respond with a single, direct, and concise sentence.
-- For analysis or explanation requests (e.g., "Explain the decision" or "Why was it rejected?"), provide a highly structured credit evaluation using bullet points (maximum 3-4 bullet points).
-- Never write large blocks of continuous text.
-- Use **bold text** for decisions, risk categories, and key numerical metrics (e.g., **APPROVE**, **High Risk**, **680**, **10%**).
+- Keep standard responses to a single concise sentence.
+- For all analysis/explanation requests, use ONLY the 3-4 bullet points format. No prose blocks allowed.
+- Use **bold text** for decisions, categories, and key numbers.
 """.strip()
 
 # ==========================================================================
@@ -460,6 +459,72 @@ def result():
     except Exception as e:
         flash(f"An unexpected error occurred: {str(e)}", "danger")
         return redirect(url_for("app_dashboard"))
+
+
+@app.route("/api/predict/simulate", methods=["POST"])
+def predict_simulate():
+    """Run a what-if prediction by merging slider overrides with baseline applicant data."""
+    if "user" not in session:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.get_json(silent=True) or {}
+    baseline = data.get("baseline") or {}
+    overrides = data.get("overrides") or {}
+
+    if not baseline:
+        return jsonify({"error": "Baseline applicant data is required."}), 400
+
+    try:
+        payload = {
+            "age": int(baseline.get("age", 35)),
+            "income": float(baseline.get("income", 55000.0)),
+            "loanamount": float(baseline.get("loanamount", 15000.0)),
+            "creditscore": int(baseline.get("creditscore", 680)),
+            "monthsemployed": int(baseline.get("monthsemployed", 60)),
+            "numcreditlines": int(baseline.get("numcreditlines", 5)),
+            "interestrate": float(baseline.get("interestrate", 12.0)),
+            "loanterm": int(baseline.get("loanterm", 36)),
+            "dtiratio": float(baseline.get("dtiratio", 0.35)),
+            "education": baseline.get("education", "Bachelor's"),
+            "employmenttype": baseline.get("employmenttype", "Full-time"),
+            "maritalstatus": baseline.get("maritalstatus", "Married"),
+            "loanpurpose": baseline.get("loanpurpose", "Home"),
+            "hasmortgage": baseline.get("hasmortgage", "No"),
+            "hasdependents": baseline.get("hasdependents", "No"),
+            "hascosigner": baseline.get("hascosigner", "No"),
+        }
+
+        if "creditscore" in overrides:
+            payload["creditscore"] = int(overrides["creditscore"])
+        if "income" in overrides:
+            payload["income"] = float(overrides["income"])
+        if "loanamount" in overrides:
+            payload["loanamount"] = float(overrides["loanamount"])
+        if "dtiratio" in overrides:
+            payload["dtiratio"] = float(overrides["dtiratio"])
+        if "loanterm" in overrides:
+            payload["loanterm"] = int(overrides["loanterm"])
+
+        predict_url = f"{BACKEND_API_URL}/api/v1/predict"
+        response = requests.post(predict_url, json=payload, timeout=10.0)
+
+        if response.status_code != 200:
+            error_detail = response.json().get("detail", "Simulation failed.") if response.content else "Simulation failed."
+            return jsonify({"error": error_detail}), response.status_code
+
+        result = response.json()
+        return jsonify({
+            "probability": result.get("probability"),
+            "prediction": result.get("prediction"),
+            "risk_level": result.get("risk_level"),
+        })
+    except requests.exceptions.Timeout:
+        return jsonify({"error": "Simulation timed out. Please try again."}), 504
+    except (TypeError, ValueError) as e:
+        return jsonify({"error": f"Invalid simulation input: {e}"}), 400
+    except Exception as e:
+        print(f"Simulation error: {e}")
+        return jsonify({"error": "An unexpected error occurred during simulation."}), 500
 
 
 @app.route("/api/chatbot/message", methods=["POST"])

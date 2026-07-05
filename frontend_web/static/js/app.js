@@ -491,3 +491,364 @@ document.addEventListener("DOMContentLoaded", () => {
         );
     });
 });
+
+// ==========================================================================
+// Interactive Credit Simulator (Dashboard What-If)
+// ==========================================================================
+document.addEventListener("DOMContentLoaded", () => {
+    const simulatorPanel = document.getElementById("credit-simulator-panel");
+    if (!simulatorPanel) return;
+
+    const contextNode = document.getElementById("chatbot-context");
+    let pageContext = {};
+    if (contextNode && contextNode.textContent) {
+        try {
+            pageContext = JSON.parse(contextNode.textContent);
+        } catch (_) {
+            return;
+        }
+    }
+
+    const baseline = pageContext.applicant || {};
+    const sliders = {
+        creditscore: document.getElementById("sim-creditscore"),
+        income: document.getElementById("sim-income"),
+        loanamount: document.getElementById("sim-loanamount"),
+        dtiratio: document.getElementById("sim-dtiratio"),
+        loanterm: document.getElementById("sim-loanterm"),
+    };
+    const valueLabels = {
+        creditscore: document.getElementById("sim-val-creditscore"),
+        income: document.getElementById("sim-val-income"),
+        loanamount: document.getElementById("sim-val-loanamount"),
+        dtiratio: document.getElementById("sim-val-dtiratio"),
+        loanterm: document.getElementById("sim-val-loanterm"),
+    };
+    const resultsPanel = document.getElementById("simulation-results-panel");
+    const verdictEl = document.getElementById("simulation-verdict");
+    const probabilityEl = document.getElementById("simulation-probability");
+    const riskLevelEl = document.getElementById("simulation-risk-level");
+    const statusEl = document.getElementById("simulation-status");
+
+    let simulateTimer = null;
+    let activeRequest = null;
+
+    function formatCurrency(value) {
+        return `$${Number(value).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
+    }
+
+    function updateSliderLabels() {
+        if (valueLabels.creditscore && sliders.creditscore) {
+            valueLabels.creditscore.textContent = sliders.creditscore.value;
+        }
+        if (valueLabels.income && sliders.income) {
+            valueLabels.income.textContent = formatCurrency(sliders.income.value);
+        }
+        if (valueLabels.loanamount && sliders.loanamount) {
+            valueLabels.loanamount.textContent = formatCurrency(sliders.loanamount.value);
+        }
+        if (valueLabels.dtiratio && sliders.dtiratio) {
+            valueLabels.dtiratio.textContent = Number(sliders.dtiratio.value).toFixed(2);
+        }
+        if (valueLabels.loanterm && sliders.loanterm) {
+            valueLabels.loanterm.textContent = sliders.loanterm.value;
+        }
+    }
+
+    function collectOverrides() {
+        return {
+            creditscore: Number(sliders.creditscore?.value),
+            income: Number(sliders.income?.value),
+            loanamount: Number(sliders.loanamount?.value),
+            dtiratio: Number(sliders.dtiratio?.value),
+            loanterm: Number(sliders.loanterm?.value),
+        };
+    }
+
+    function applyResultsPanelStyle(prediction, riskLevel) {
+        if (!resultsPanel) return;
+
+        resultsPanel.classList.remove(
+            "simulation-results-panel--approve",
+            "simulation-results-panel--reject",
+            "simulation-results-panel--medium"
+        );
+
+        if (prediction === 0) {
+            resultsPanel.classList.add("simulation-results-panel--approve");
+        } else if (riskLevel === "Medium Risk") {
+            resultsPanel.classList.add("simulation-results-panel--medium");
+        } else {
+            resultsPanel.classList.add("simulation-results-panel--reject");
+        }
+    }
+
+    function updateResultsPanel(data) {
+        const probability = Number(data.probability);
+        const prediction = Number(data.prediction);
+        const riskLevel = String(data.risk_level || "");
+
+        if (verdictEl) {
+            verdictEl.textContent = `SIMULATED VERDICT: ${prediction === 0 ? "APPROVE" : "REJECT"}`;
+        }
+        if (probabilityEl) {
+            probabilityEl.textContent = `${(probability * 100).toFixed(2)}%`;
+        }
+        if (riskLevelEl) {
+            riskLevelEl.textContent = riskLevel;
+        }
+        if (statusEl) {
+            statusEl.textContent = "Simulation updated";
+        }
+
+        applyResultsPanelStyle(prediction, riskLevel);
+    }
+
+    async function runSimulation() {
+        if (statusEl) statusEl.textContent = "Simulating…";
+
+        if (activeRequest) {
+            activeRequest.abort();
+        }
+        activeRequest = new AbortController();
+
+        try {
+            const response = await fetch("/api/predict/simulate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    baseline,
+                    overrides: collectOverrides(),
+                }),
+                signal: activeRequest.signal,
+            });
+
+            const payload = await response.json();
+            if (!response.ok) {
+                if (statusEl) statusEl.textContent = payload.error || "Simulation failed.";
+                return;
+            }
+
+            updateResultsPanel(payload);
+        } catch (error) {
+            if (error && error.name === "AbortError") return;
+            if (statusEl) statusEl.textContent = "Connection error during simulation.";
+        } finally {
+            activeRequest = null;
+        }
+    }
+
+    function scheduleSimulation() {
+        updateSliderLabels();
+        if (simulateTimer) clearTimeout(simulateTimer);
+        simulateTimer = setTimeout(runSimulation, 400);
+    }
+
+    Object.values(sliders).forEach((slider) => {
+        if (!slider) return;
+        slider.addEventListener("input", scheduleSimulation);
+        slider.addEventListener("change", scheduleSimulation);
+    });
+
+    updateSliderLabels();
+
+    // ==========================================================================
+    // Circular Rose (Coxcomb) SVG Wheel for Visual Diagnostics
+    // ==========================================================================
+    function polarToCartesian(centerX, centerY, radius, angleInDegrees) {
+        var angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
+        return {
+            x: centerX + (radius * Math.cos(angleInRadians)),
+            y: centerY + (radius * Math.sin(angleInRadians))
+        };
+    }
+
+    function getWedgePath(x, y, r_in, r_out, startAngle, endAngle) {
+        var start_in = polarToCartesian(x, y, r_in, startAngle);
+        var start_out = polarToCartesian(x, y, r_out, startAngle);
+        var end_out = polarToCartesian(x, y, r_out, endAngle);
+        var end_in = polarToCartesian(x, y, r_in, endAngle);
+        
+        var largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
+        
+        return [
+            "M", start_out.x, start_out.y,
+            "A", r_out, r_out, 0, largeArcFlag, 1, end_out.x, end_out.y,
+            "L", end_in.x, end_in.y,
+            "A", r_in, r_in, 0, largeArcFlag, 0, start_in.x, start_in.y,
+            "Z"
+        ].join(" ");
+    }
+
+    function initDiagnosticsWheel() {
+        const wheelDataEl = document.getElementById("diagnostics-wheel-data");
+        if (!wheelDataEl) return;
+        
+        const factors = JSON.parse(wheelDataEl.getAttribute("data-factors") || "[]");
+        const prediction = parseInt(wheelDataEl.getAttribute("data-prediction") || "0");
+        const probability = parseFloat(wheelDataEl.getAttribute("data-probability") || "0");
+        const riskLevel = wheelDataEl.getAttribute("data-risk-level") || "";
+        
+        const svg = document.getElementById("diagnostics-wheel");
+        const legendContainer = document.getElementById("diagnostics-wheel-legend");
+        if (!svg || !legendContainer) return;
+        
+        svg.innerHTML = "";
+        legendContainer.innerHTML = "";
+        
+        if (factors.length === 0) return;
+        
+        const N = factors.length;
+        const centerX = 150;
+        const centerY = 150;
+        const r_inner = 55;
+        const r_max = 130;
+        
+        const max_impact = Math.max(...factors.map(f => f.abs), 0.001);
+        
+        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        
+        const riskGrad = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+        riskGrad.setAttribute("id", "wheel-grad-risk");
+        riskGrad.innerHTML = `
+            <stop offset="0%" stop-color="#f43f5e" />
+            <stop offset="100%" stop-color="#ec4899" />
+        `;
+        defs.appendChild(riskGrad);
+        
+        const boostGrad = document.createElementNS("http://www.w3.org/2000/svg", "linearGradient");
+        boostGrad.setAttribute("id", "wheel-grad-boost");
+        boostGrad.innerHTML = `
+            <stop offset="0%" stop-color="#06b6d4" />
+            <stop offset="100%" stop-color="#22d3ee" />
+        `;
+        defs.appendChild(boostGrad);
+        
+        svg.appendChild(defs);
+        
+        function formatParamName(raw) {
+            let s = raw.replace(/_/g, ' ');
+            if (s.startsWith('Employmenttype ')) return 'Employment: ' + s.substring(15);
+            if (s.startsWith('Loanpurpose ')) return 'Purpose: ' + s.substring(12);
+            if (s.startsWith('Maritalstatus ')) return 'Marital: ' + s.substring(14);
+            if (s.toLowerCase() === 'creditscore band') return 'Credit Score Category';
+            if (s.toLowerCase() === 'creditscore') return 'Credit Score';
+            if (s.toLowerCase() === 'dtiratio') return 'DTI Ratio';
+            if (s.toLowerCase() === 'monthsemployed') return 'Months Employed';
+            if (s.toLowerCase() === 'numcreditlines') return 'Credit Lines';
+            if (s.toLowerCase() === 'interestrate') return 'Interest Rate';
+            if (s.toLowerCase() === 'loanamount') return 'Loan Amount';
+            if (s.toLowerCase() === 'loanterm') return 'Loan Term';
+            if (s.toLowerCase() === 'log income') return 'Log Income';
+            if (s.toLowerCase() === 'log loanamount') return 'Log Loan Amount';
+            if (s.toLowerCase() === 'high risk flag') return 'High Risk Flag';
+            if (s.toLowerCase() === 'payment to income') return 'Payment-to-Income';
+            if (s.toLowerCase() === 'debt burden score') return 'Debt Burden';
+            return s;
+        }
+        
+        const centerVerdict = document.getElementById("wheel-center-verdict");
+        const centerValue = document.getElementById("wheel-center-value");
+        const centerLabel = document.getElementById("wheel-center-label");
+        
+        function resetCenterText() {
+            if (centerVerdict) {
+                centerVerdict.textContent = prediction === 0 ? "APPROVED" : "REJECTED";
+                centerVerdict.style.color = prediction === 0 ? "#10b981" : "#f43f5e";
+            }
+            if (centerValue) {
+                centerValue.textContent = (probability * 100).toFixed(1) + "%";
+            }
+            if (centerLabel) {
+                centerLabel.textContent = riskLevel;
+                centerLabel.style.color = "var(--text-muted)";
+            }
+        }
+        
+        resetCenterText();
+        
+        const angleWidth = 360 / N;
+        
+        factors.forEach((factor, i) => {
+            const startAngle = i * angleWidth;
+            const endAngle = (i + 1) * angleWidth;
+            const r_out = r_inner + (factor.abs / max_impact) * (r_max - r_inner);
+            
+            const pathData = getWedgePath(centerX, centerY, r_inner, r_out, startAngle, endAngle);
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", pathData);
+            path.setAttribute("class", `wheel-wedge wedge-${i}`);
+            
+            const color = factor.direction === 'increased' ? 'url(#wheel-grad-risk)' : 'url(#wheel-grad-boost)';
+            const glowColor = factor.direction === 'increased' ? '#f43f5e' : '#22d3ee';
+            
+            path.setAttribute("fill", color);
+            path.style.setProperty("--glow-color", glowColor);
+            
+            path.addEventListener("mouseenter", () => highlightFactor(i));
+            path.addEventListener("mouseleave", () => unhighlightFactor(i));
+            
+            svg.appendChild(path);
+            
+            const item = document.createElement("div");
+            item.className = `legend-list-item legend-item-${i}`;
+            
+            const sign = factor.impact >= 0 ? "+" : "";
+            const formattedName = formatParamName(factor.param);
+            const formattedImpact = `${sign}${factor.impact.toFixed(2)}`;
+            
+            item.style.setProperty("--hover-border", factor.direction === 'increased' ? 'rgba(244, 63, 94, 0.3)' : 'rgba(34, 211, 238, 0.3)');
+            
+            item.innerHTML = `
+                <div class="legend-item-left">
+                    <span class="legend-dot legend-dot--${factor.direction === 'increased' ? 'risk' : 'boost'}"></span>
+                    <span>${formattedName}</span>
+                </div>
+                <span class="legend-badge legend-badge--${factor.direction === 'increased' ? 'risk' : 'boost'}">
+                    ${formattedImpact}
+                </span>
+            `;
+            
+            item.addEventListener("mouseenter", () => highlightFactor(i));
+            item.addEventListener("mouseleave", () => unhighlightFactor(i));
+            
+            legendContainer.appendChild(item);
+        });
+        
+        function highlightFactor(idx) {
+            const wedge = svg.querySelector(`.wedge-${idx}`);
+            if (wedge) wedge.classList.add("active");
+            
+            const legendItem = legendContainer.querySelector(`.legend-item-${idx}`);
+            if (legendItem) legendItem.classList.add("active");
+            
+            const f = factors[idx];
+            const formattedName = formatParamName(f.param);
+            const sign = f.impact >= 0 ? "+" : "";
+            
+            if (centerVerdict) {
+                centerVerdict.textContent = f.direction === 'increased' ? "RISK FACTOR" : "CREDIT BOOST";
+                centerVerdict.style.color = f.direction === 'increased' ? "#fda4af" : "#67e8f9";
+            }
+            if (centerValue) {
+                centerValue.textContent = `${sign}${f.impact.toFixed(2)}`;
+            }
+            if (centerLabel) {
+                centerLabel.textContent = formattedName;
+                centerLabel.style.color = "var(--text-primary)";
+            }
+        }
+        
+        function unhighlightFactor(idx) {
+            const wedge = svg.querySelector(`.wedge-${idx}`);
+            if (wedge) wedge.classList.remove("active");
+            
+            const legendItem = legendContainer.querySelector(`.legend-item-${idx}`);
+            if (legendItem) legendItem.classList.remove("active");
+            
+            resetCenterText();
+        }
+    }
+
+    initDiagnosticsWheel();
+});

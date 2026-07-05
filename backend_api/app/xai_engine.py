@@ -252,11 +252,11 @@ class XAIEngine:
                 feature_names=self.feature_names
             )
 
-            plt.figure(figsize=(10, 6))
+            plt.figure(figsize=(10, 6), facecolor="white")
             shap.plots.waterfall(exp, max_display=10, show=False)
-            
+
             buf = io.BytesIO()
-            plt.savefig(buf, format='png', bbox_inches='tight', dpi=150)
+            plt.savefig(buf, format="png", bbox_inches="tight", dpi=150, facecolor="white")
             plt.close()
             
             return base64.b64encode(buf.getvalue()).decode('utf-8')
@@ -371,7 +371,7 @@ class XAIEngine:
 
         prob = float(self.lgb_model.predict_proba(df_scaled)[0, 1])
         shap_plot_b64 = self.generate_shap_plot(df_raw, df_scaled)
-        text_explanation = self.generate_shap_reasons(df_scaled)
+        text_explanation = self.generate_shap_reasons(df_scaled, top_n=10)
 
         prediction = 1 if prob >= 0.5 else 0
 
@@ -396,3 +396,6 @@ class XAIEngine:
             print(f"Audit log write failed (non-fatal): {e}")
 
         return prob, prediction, risk_level, shap_plot_b64, text_explanation
+
+# Trigger reload for rebuilt scaler.pkl
+

@@ -281,10 +281,64 @@ document.addEventListener("DOMContentLoaded", () => {
             "How does the underwriting form work?",
         ];
 
+    function escapeHtml(text) {
+        return String(text)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    function parseMarkdown(text) {
+        const escaped = escapeHtml(String(text || ""));
+
+        function formatInline(line) {
+            return line.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        }
+
+        const lines = escaped.split("\n");
+        const parts = [];
+        let inList = false;
+
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i];
+            const isBullet = /^(\* |- )/.test(line);
+
+            if (isBullet) {
+                const itemText = line.replace(/^(\* |- )/, "");
+                if (!inList) {
+                    parts.push("<ul>");
+                    inList = true;
+                }
+                parts.push(`<li>${formatInline(itemText)}</li>`);
+            } else {
+                if (inList) {
+                    parts.push("</ul>");
+                    inList = false;
+                }
+                parts.push(formatInline(line));
+                if (i < lines.length - 1) {
+                    parts.push("<br>");
+                }
+            }
+        }
+
+        if (inList) {
+            parts.push("</ul>");
+        }
+
+        return parts.join("");
+    }
+
     function addMessage(role, text) {
         const msg = document.createElement("div");
         msg.className = `chatbot-message ${role}`;
-        msg.textContent = text;
+        if (role === "user") {
+            msg.innerHTML = parseMarkdown(text);
+        } else {
+            msg.textContent = text;
+        }
         messagesEl.appendChild(msg);
         messagesEl.scrollTop = messagesEl.scrollHeight;
     }
@@ -335,6 +389,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }, delay);
         });
 
+        msg.innerHTML = parseMarkdown(content);
         speakAssistantResponse(content);
     }
 

@@ -145,8 +145,11 @@ def _extract_genai_text(response_obj):
     return None
 
 
-def _read_latest_audit_record():
-    """Return the most recent row from prediction_audit.csv, or None if unavailable."""
+def _read_latest_audit_record(username):
+    """Return the most recent audit row for the given user, or None if unavailable."""
+    if not username:
+        return None
+
     path = AUDIT_CSV_PATH
     if not path or not os.path.isfile(path):
         return None
@@ -156,7 +159,11 @@ def _read_latest_audit_record():
             rows = list(csv.DictReader(audit_file))
         if not rows:
             return None
-        return rows[-1]
+
+        user_rows = [row for row in rows if row.get("username") == username]
+        if not user_rows:
+            return None
+        return user_rows[-1]
     except OSError as e:
         print(f"Audit CSV read failed: {e}")
         return None
@@ -433,7 +440,12 @@ def result():
         }
 
         predict_url = f"{BACKEND_API_URL}/api/v1/predict"
-        response = requests.post(predict_url, json=payload, timeout=10.0)
+        response = requests.post(
+            predict_url,
+            json=payload,
+            params={"username": session.get("user")},
+            timeout=10.0,
+        )
         
         if response.status_code == 400:
             error_detail = response.json().get("detail", "Invalid input data.")

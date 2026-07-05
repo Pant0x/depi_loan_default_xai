@@ -1,4 +1,6 @@
-from fastapi import FastAPI, HTTPException, status
+from typing import Optional
+
+from fastapi import FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from .schemas import LoanFeatures, LoanPredictResponse
 from .xai_engine import XAIEngine
@@ -79,7 +81,10 @@ def health_check():
     status_code=status.HTTP_200_OK,
     summary="Predict Loan Default Risk and Generate SHAP Explanation"
 )
-async def predict_loan_default(features: LoanFeatures):
+async def predict_loan_default(
+    features: LoanFeatures,
+    username: Optional[str] = Query(None),
+):
     """
     Accepts loan applicant details, runs LightGBM inference, and returns 
     the probability of default, prediction class, risk level, and a base64-encoded SHAP waterfall plot.
@@ -96,7 +101,9 @@ async def predict_loan_default(features: LoanFeatures):
             )
 
     try:
-        prob, pred, risk_level, shap_plot, text_explanation = engine.predict_risk(features)
+        prob, pred, risk_level, shap_plot, text_explanation = engine.predict_risk(
+            features, username=username
+        )
         
         return LoanPredictResponse(
             probability=prob,

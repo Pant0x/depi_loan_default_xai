@@ -22,6 +22,7 @@ class XAIEngine:
 
     AUDIT_LOG_COLUMNS = [
         "timestamp",
+        "username",
         "age",
         "income",
         "loanamount",
@@ -292,10 +293,12 @@ class XAIEngine:
         risk_level: str,
         shap_plot_b64: Optional[str],
         text_explanation: List[str],
+        username: Optional[str] = None,
     ) -> None:
         """Append one prediction record to the audit CSV (thread-safe)."""
         row = {
             "timestamp": datetime.now(timezone.utc).isoformat(),
+            "username": username or "",
             "age": input_features.age,
             "income": input_features.income,
             "loanamount": input_features.loanamount,
@@ -328,7 +331,11 @@ class XAIEngine:
                     writer.writeheader()
                 writer.writerow(row)
 
-    def predict_risk(self, input_features: LoanFeatures) -> Tuple[float, int, str, Optional[str], List[str]]:
+    def predict_risk(
+        self,
+        input_features: LoanFeatures,
+        username: Optional[str] = None,
+    ) -> Tuple[float, int, str, Optional[str], List[str]]:
         """
         Preprocesses inputs, performs LightGBM inference, and generates SHAP explanations.
         Returns:
@@ -353,7 +360,13 @@ class XAIEngine:
 
         try:
             self._write_prediction_audit(
-                input_features, prob, prediction, risk_level, shap_plot_b64, text_explanation
+                input_features,
+                prob,
+                prediction,
+                risk_level,
+                shap_plot_b64,
+                text_explanation,
+                username=username,
             )
         except Exception as e:
             print(f"Audit log write failed (non-fatal): {e}")

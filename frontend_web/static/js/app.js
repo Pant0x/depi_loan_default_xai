@@ -163,14 +163,14 @@ document.addEventListener("DOMContentLoaded", () => {
         ? [
             "Why is this applicant high risk?",
             "Which feature lowered risk the most?",
-            "Explain SHAP vs LIME for this result",
+            "Explain the SHAP waterfall for this result",
             "How can this applicant reduce default risk?",
         ]
         : [
             "What does this project do?",
             "How does prediction work end to end?",
             "What is SHAP used for here?",
-            "Which model can I select?",
+            "How does the underwriting form work?",
         ];
 
     function addMessage(role, text) {
@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", () => {
     addMessage(
         "assistant",
         pageContext.page === "dashboard"
-            ? "I can explain this exact applicant result. Ask about risk drivers, SHAP/LIME, or improvement ideas."
+            ? "I can explain this exact applicant result. Ask about risk drivers, SHAP explanations, or improvement ideas."
             : "I am your LOAN XAI SYSTEM assistant. Ask me anything about this project."
     );
 

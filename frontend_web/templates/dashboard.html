@@ -107,58 +107,27 @@
             <!-- Right Side: SHAP Plot and Detailed Explanation -->
             <div style="display: flex; flex-direction: column; gap: 2rem; grid-column: auto / span 2;">
                 
-                <!-- Dual XAI Explanation Container (SHAP & LIME) -->
+                <!-- SHAP Explanation -->
                 <div class="app-card" style="position: relative; overflow: hidden; display: flex; flex-direction: column;">
                     <div style="position: absolute; top:0; left:0; right:0; height:4px; background: linear-gradient(to right, #a855f7, #ec4899);"></div>
                     
-                    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem;">
-                        <div>
-                            <h3 style="font-size: 1.25rem; font-weight: 700; color: white;">Explainable AI (XAI) Suite</h3>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Interpret predictions locally using SHAP and LIME.</p>
-                        </div>
-                        
-                        <!-- Tabs Navigation -->
-                        <div style="display: flex; gap: 0.5rem; background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 0.25rem;">
-                            <button id="tab-shap" onclick="switchXaiTab('shap')" style="background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s;">
-                                SHAP Waterfall
-                            </button>
-                            <button id="tab-lime" onclick="switchXaiTab('lime')" style="background: transparent; color: var(--text-secondary); border: none; padding: 0.5rem 1rem; font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; border-radius: 0.5rem; cursor: pointer; transition: all 0.2s;">
-                                LIME Surrogate
-                            </button>
-                        </div>
+                    <div style="margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: 700; color: white;">SHAP Explanation</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Feature-level breakdown of how this prediction was reached.</p>
                     </div>
 
-                    <!-- SHAP Tab Content -->
-                    <div id="content-shap" style="display: flex; flex-direction: column; gap: 1rem;">
-                        {% if result.shap_plot %}
-                            <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; text-align: center;">
-                                <img src="data:image/png;base64,{{ result.shap_plot }}" alt="SHAP Explanation Waterfall Plot" style="max-width: 100%; height: auto; border-radius: 0.5rem; background: white;">
-                            </div>
-                            <div style="background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
-                                <strong style="color: white;">SHAP Waterfall Interpretation:</strong> Features in <strong style="color: #fca5a5;">pink/red</strong> increase the predicted probability of loan default, while features in <strong style="color: #7dd3fc;">blue</strong> decrease the default probability. The baseline value represents average risk across all applicants.
-                            </div>
-                        {% else %}
-                            <div style="padding: 4rem 2rem; text-align: center; background-color: rgba(255,255,255,0.03); border-radius: 0.75rem; border: 1px dashed var(--border-color);">
-                                <h4 style="font-size: 1rem; font-weight: 600; color: var(--text-secondary);">SHAP Plot Unavailable</h4>
-                            </div>
-                        {% endif %}
-                    </div>
-
-                    <!-- LIME Tab Content -->
-                    <div id="content-lime" style="display: none; flex-direction: column; gap: 1rem;">
-                        {% if result.lime_plot %}
-                            <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; text-align: center;">
-                                <img src="data:image/png;base64,{{ result.lime_plot }}" alt="LIME Local Explanation Plot" style="max-width: 100%; height: auto; border-radius: 0.5rem; background: white;">
-                            </div>
-                            <div style="background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6;">
-                                <strong style="color: white;">LIME Surrogacy Interpretation:</strong> Features on the <strong>right (positive)</strong> push the classification towards defaulting, whereas features on the <strong>left (negative)</strong> support approval.
-                            </div>
-                        {% else %}
-                            <div style="padding: 4rem 2rem; text-align: center; background-color: rgba(255,255,255,0.03); border-radius: 0.75rem; border: 1px dashed var(--border-color);">
-                                <h4 style="font-size: 1rem; font-weight: 600; color: var(--text-secondary);">LIME Plot Unavailable</h4>
-                            </div>
-                        {% endif %}
-                    </div>
+                    {% if result.shap_plot %}
+                        <div style="background-color: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 0.75rem; padding: 1rem; text-align: center;">
+                            <img src="data:image/png;base64,{{ result.shap_plot }}" alt="SHAP Explanation Waterfall Plot" style="max-width: 100%; height: auto; border-radius: 0.5rem; background: white;">
+                        </div>
+                        <div style="background-color: rgba(255,255,255,0.03); border: 1px solid var(--border-color); border-radius: 0.5rem; padding: 1rem; font-size: 0.85rem; color: var(--text-secondary); line-height: 1.6; margin-top: 1rem;">
+                            <strong style="color: white;">SHAP Waterfall Interpretation:</strong> Features in <strong style="color: #fca5a5;">pink/red</strong> increase the predicted probability of loan default, while features in <strong style="color: #7dd3fc;">blue</strong> decrease the default probability. The baseline value represents average risk across all applicants.
+                        </div>
+                    {% else %}
+                        <div style="padding: 4rem 2rem; text-align: center; background-color: rgba(255,255,255,0.03); border-radius: 0.75rem; border: 1px dashed var(--border-color);">
+                            <h4 style="font-size: 1rem; font-weight: 600; color: var(--text-secondary);">SHAP Plot Unavailable</h4>
+                        </div>
+                    {% endif %}
                 </div>
 
             </div>
@@ -265,31 +234,5 @@
     </script>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
-
-    <!-- Script to toggle between SHAP and LIME tabs -->
-    <script>
-        function switchXaiTab(tab) {
-            const tabShap = document.getElementById('tab-shap');
-            const tabLime = document.getElementById('tab-lime');
-            const contentShap = document.getElementById('content-shap');
-            const contentLime = document.getElementById('content-lime');
-
-            if (tab === 'shap') {
-                tabShap.style.background = 'var(--primary)';
-                tabShap.style.color = 'white';
-                tabLime.style.background = 'transparent';
-                tabLime.style.color = 'var(--text-secondary)';
-                contentShap.style.display = 'flex';
-                contentLime.style.display = 'none';
-            } else {
-                tabLime.style.background = 'var(--primary)';
-                tabLime.style.color = 'white';
-                tabShap.style.background = 'transparent';
-                tabShap.style.color = 'var(--text-secondary)';
-                contentLime.style.display = 'flex';
-                contentShap.style.display = 'none';
-            }
-        }
-    </script>
 </body>
 </html>

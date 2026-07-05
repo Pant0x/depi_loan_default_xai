@@ -25,7 +25,7 @@ PROJECT_CHATBOT_SYSTEM_PROMPT = """
 You are the official LOAN XAI SYSTEM assistant.
 
 Scope rules:
-- Only answer questions about this project: loan default prediction, underwriting workflow, FastAPI backend, Flask frontend, LightGBM/XGBoost, SHAP/LIME explainability, form fields, and dashboard interpretation.
+- Only answer questions about this project: loan default prediction, underwriting workflow, FastAPI backend, Flask frontend, LightGBM, SHAP explainability, form fields, and dashboard interpretation.
 - If the user asks about anything outside this project, politely refuse and redirect to project-related help.
 - Never claim external facts as certain unless they are provided in the user context.
 
@@ -41,8 +41,8 @@ Project facts:
 - The system predicts loan default risk and shows explainability artifacts.
 - Frontend: Flask app with pages for landing, architecture, form, and dashboard results.
 - Backend: FastAPI endpoint /api/v1/predict for inference.
-- Supported models in UI: lightgbm and xgboost.
-- Result view includes: probability, prediction class, risk level, SHAP, LIME, and text explanations.
+- Inference uses LightGBM with SHAP explanations exclusively.
+- Result view includes: probability, prediction class, risk level, SHAP plot, and text explanations.
 """.strip()
 
 # ==========================================================================
@@ -324,10 +324,8 @@ def result():
             "hascosigner": request.form.get("hascosigner", "No")
         }
 
-        model_type = request.form.get("model_type", "lightgbm")
-
         predict_url = f"{BACKEND_API_URL}/api/v1/predict"
-        response = requests.post(predict_url, json=payload, params={"model_type": model_type}, timeout=10.0)
+        response = requests.post(predict_url, json=payload, timeout=10.0)
         
         if response.status_code == 400:
             error_detail = response.json().get("detail", "Invalid input data.")

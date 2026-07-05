@@ -331,6 +331,30 @@ class XAIEngine:
                     writer.writeheader()
                 writer.writerow(row)
 
+    def get_latest_audit_record(self, username: str) -> Optional[dict]:
+        """Return the most recent audit row for the given user, or None if unavailable."""
+        if not username:
+            return None
+
+        with self._lock:
+            if not self.audit_log_path.exists():
+                return None
+
+            try:
+                with open(self.audit_log_path, newline="", encoding="utf-8") as audit_file:
+                    rows = list(csv.DictReader(audit_file))
+            except OSError as e:
+                print(f"Audit CSV read failed: {e}")
+                return None
+
+            if not rows:
+                return None
+
+            user_rows = [row for row in rows if row.get("username") == username]
+            if not user_rows:
+                return None
+            return user_rows[-1]
+
     def predict_risk(
         self,
         input_features: LoanFeatures,

@@ -1,4 +1,3 @@
-import csv
 import os
 import json
 import requests
@@ -21,14 +20,6 @@ SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXV
 CHATBOT_MODEL = os.environ.get("GEMINI_MODEL", "models/gemini-3.5-flash")
 CHATBOT_HISTORY_LIMIT = 12
 CHATBOT_HISTORY_MAX_CHARS = 240
-
-_DEFAULT_AUDIT_CSV = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-    "backend_api",
-    "logs",
-    "prediction_audit.csv",
-)
-AUDIT_CSV_PATH = os.environ.get("AUDIT_CSV_PATH", _DEFAULT_AUDIT_CSV)
 
 NO_AUDIT_RECORD_MESSAGE = (
     "No applicant record has been evaluated yet. Please submit a loan application "
@@ -146,26 +137,26 @@ def _extract_genai_text(response_obj):
 
 
 def _read_latest_audit_record(username):
-    """Return the most recent audit row for the given user, or None if unavailable."""
+    """Fetch the most recent audit row for the given user from the backend API."""
     if not username:
         return None
 
-    path = AUDIT_CSV_PATH
-    if not path or not os.path.isfile(path):
-        return None
-
     try:
-        with open(path, newline="", encoding="utf-8") as audit_file:
-            rows = list(csv.DictReader(audit_file))
-        if not rows:
+        response = requests.get(
+            f"{BACKEND_API_URL}/api/v1/audit/latest",
+            params={"username": username},
+            timeout=10.0,
+        )
+        if response.status_code == 404:
+            return None
+        if response.status_code != 200:
+            print(f"Audit API request failed: HTTP {response.status_code}")
             return None
 
-        user_rows = [row for row in rows if row.get("username") == username]
-        if not user_rows:
-            return None
-        return user_rows[-1]
-    except OSError as e:
-        print(f"Audit CSV read failed: {e}")
+        data = response.json()
+        return data if isinstance(data, dict) and data else None
+    except Exception as e:
+        print(f"Audit API request failed: {e}")
         return None
 
 
@@ -237,7 +228,8 @@ def _format_audit_record_block(record):
 
 
 def _call_gemini(user_message, page_context, history):
-    audit_record = _read_latest_audit_record()
+    username = session.get("user")
+    audit_record = _read_latest_audit_record(username)
     if audit_record is None:
         return NO_AUDIT_RECORD_MESSAGE
 

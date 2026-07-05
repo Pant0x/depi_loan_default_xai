@@ -119,3 +119,31 @@ async def predict_loan_default(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An error occurred during inference processing: {str(e)}"
         )
+
+
+@app.get(
+    "/api/v1/audit/latest",
+    status_code=status.HTTP_200_OK,
+    summary="Get Latest Audit Record for User",
+)
+async def get_latest_audit_record(username: str = Query(..., min_length=1)):
+    """Return the most recent prediction audit row for the given username."""
+    global engine
+
+    if engine is None:
+        try:
+            engine = XAIEngine()
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Inference engine is not initialized. Model load failed: {str(e)}"
+            )
+
+    record = engine.get_latest_audit_record(username)
+    if record is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No audit record found for this user.",
+        )
+
+    return record

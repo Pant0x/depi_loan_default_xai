@@ -324,7 +324,12 @@ def index():
 @app.route("/architecture", methods=["GET"])
 def architecture():
     """Serves the Architecture Page."""
-    return render_template("architecture.html")
+    return render_template("architecture.html", username=session.get("user"))
+
+@app.route("/transparency", methods=["GET"])
+def transparency():
+    """Serves the Transparency Page."""
+    return render_template("transparency.html", username=session.get("user"))
 
 @app.route("/signup", methods=["POST"])
 def signup():

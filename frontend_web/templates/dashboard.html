@@ -23,19 +23,23 @@
             <a href="/" class="logo-section" style="text-decoration:none;">
                 <div class="logo-icon">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
                     </svg>
                 </div>
                 <span class="logo-text">LOAN XAI SYSTEM</span>
             </a>
+            
             <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <span style="font-size: 0.85rem; color: var(--text-muted);">
+                <span style="font-size: 0.85rem; color: var(--text-muted); margin-right: 1rem;">
                     Model: <strong style="color: var(--primary); text-transform: uppercase;">{{ result.model_type }}</strong>
                 </span>
-                <div class="nav-links">
-                    <span style="color: var(--text-muted); font-size: 0.85rem;">User: <strong style="color:var(--text-primary);">{{ username }}</strong></span>
-                    <a href="/logout" class="nav-link">Log Out</a>
-                </div>
+                <nav class="nav-links">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/transparency" class="nav-link">Transparency</a>
+                    <a href="/architecture" class="nav-link">Architecture</a>
+                    <span style="color: var(--text-muted); font-size: 0.85rem; margin-left: 0.5rem;">User: <strong style="color:var(--text-primary);">{{ username }}</strong></span>
+                    <a href="/logout" class="nav-link" style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.4rem 0.85rem; border-radius: 0.5rem; color: #fca5a5;">Log Out</a>
+                </nav>
             </div>
         </div>
     </header>

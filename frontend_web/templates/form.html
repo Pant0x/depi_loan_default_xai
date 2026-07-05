@@ -37,11 +37,15 @@
                 </div>
                 <span class="logo-text">LOAN XAI SYSTEM</span>
             </a>
+            
             <div style="display: flex; align-items: center; gap: 1.5rem;">
-                <div class="nav-links">
-                    <span style="color: var(--text-muted); font-size: 0.85rem;">User: <strong style="color:var(--text-primary);">{{ username }}</strong></span>
-                    <a href="/logout" class="nav-link">Log Out</a>
-                </div>
+                <nav class="nav-links">
+                    <a href="/" class="nav-link" style="color: var(--primary); font-weight: 600;">Home</a>
+                    <a href="/transparency" class="nav-link">Transparency</a>
+                    <a href="/architecture" class="nav-link">Architecture</a>
+                    <span style="color: var(--text-muted); font-size: 0.85rem; margin-left: 0.5rem;">User: <strong style="color:var(--text-primary);">{{ username }}</strong></span>
+                    <a href="/logout" class="nav-link" style="background-color: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); padding: 0.4rem 0.85rem; border-radius: 0.5rem; color: #fca5a5;">Log Out</a>
+                </nav>
             </div>
         </div>
     </header>

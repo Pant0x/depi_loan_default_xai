@@ -101,14 +101,21 @@ python backend_api/test_inference.py
 ```
 
 ### Step 3: Run the Application
-Start both servers in separate terminal sessions:
+Start both servers in separate terminal sessions.
 
-Before starting the frontend, set your Gemini key:
+#### Configuration (API Key):
+You can configure your Gemini API Key in one of two ways:
+1. **Using a `.env` file (Recommended):** Create a file named `.env` in the root folder of the project and add your key:
+   ```env
+   GEMINI_API_KEY="your_gemini_api_key"
+   ```
+   *(Note: The `.env` file is already in `.gitignore` so your API key will remain safe and won't be pushed to GitHub).*
 
-```bash
-# Windows PowerShell
-$env:GEMINI_API_KEY="your_gemini_api_key"
-```
+2. **Using Environment Variables:**
+   ```bash
+   # Windows PowerShell
+   $env:GEMINI_API_KEY="your_gemini_api_key"
+   ```
 
 **Terminal 1 (Backend FastAPI):**
 ```bash
@@ -125,6 +132,14 @@ python frontend_web/app.py
 Open your browser and navigate to `http://127.0.0.1:5000` to access the underwriting application.
 
 ---
+
+## ⚠️ Render Troubleshooting (Gemini Chatbot Rate Limits / 429 Error)
+
+If you deploy to **Render** and receive a `429 RESOURCE_EXHAUSTED` error when chatting with the Credit Officer chatbot, this is due to **Render's shared outbound IP addresses hitting Google's free-tier rate limits**. Since hundreds of free-tier websites on Render share those same outbound IPs, Google's free-tier endpoint rate limits them.
+
+To solve this:
+1. **Run Locally:** Run the application on your local machine using the instructions in **Local Development Setup** above. Since it uses your dedicated local IP address, it will not hit the shared hosting rate limit and will work perfectly.
+2. **Upgrade to Pay-As-You-Go:** Link a billing account/card to your project in [Google AI Studio](https://aistudio.google.com/) to upgrade from the free tier. Gemini 3.1 Flash-Lite is extremely cheap (under a fraction of a cent per request) and upgrading to the paid tier removes the shared-IP rate limiting entirely on Render.
 
 ## 💻 GitHub Private Repository Setup
 

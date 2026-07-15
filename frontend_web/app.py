@@ -6,6 +6,10 @@ import time
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory, jsonify
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET_KEY", "xai_super_secret_key_12345")
@@ -236,7 +240,7 @@ def _call_gemini(user_message, page_context, history):
     if audit_record is None:
         return NO_AUDIT_RECORD_MESSAGE
 
-    api_key = os.environ.get("GEMINI_API_KEY", "AQ.Ab8RN6Lh8qldotNaPjFD9gg7rAD5tJeJJmEMa0DQhg4M1gzTnw")
+    api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
         return (
             "The Credit Officer service is not configured yet. Please set GEMINI_API_KEY in the "

@@ -1,25 +1,55 @@
 # LOAN XAI SYSTEM: Automated Explainable AI Credit Risk Suite
 
 [![Live Demo](https://img.shields.io/badge/Render-Live%20Demo-indigo?style=for-the-badge&logo=render)](https://depi-loan-default-xai-frontend.onrender.com)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100%2B-009688?style=flat&logo=fastapi)](https://fastapi.tiangolo.com/)
+[![Flask](https://img.shields.io/badge/Flask-2.3%2B-black?style=flat&logo=flask)](https://flask.palletsprojects.com/)
+[![Gemini](https://img.shields.io/badge/Gemini%20API-3.1%20Flash--Lite-blue?style=flat&logo=google)](https://deepmind.google/technologies/gemini/)
 
-> 🚀 **Live Demo:** Try the deployed application in production at: **[https://depi-loan-default-xai-frontend.onrender.com](https://depi-loan-default-xai-frontend.onrender.com)**
+LOAN XAI SYSTEM is a production-grade, state-of-the-art **Explainable AI (XAI)** loan underwriting and decision-support application. It bridges the gap between complex black-box machine learning models and non-technical banking underwriters by delivering real-time predictions, visual feature-attribution explanations (SHAP), and an interactive credit copilot chatbot.
 
+---
 
-LOAN XAI SYSTEM is a production-grade, state-of-the-art **Explainable AI (XAI)** loan underwriting application built using the Kaggle Loan Default dataset. The system features a high-performance **FastAPI backend** for machine learning inference and real-time **SHAP local explanations**, paired with a professional, dark-themed **Flask frontend web app** styled with Tailwind CSS.
+## 🏗️ System Architecture
 
+The application is built on a stateless, decoupled multi-service architecture:
+
+```mermaid
+graph TD
+    User([Applicant / Underwriter]) -->|Fills Form| FE[Flask Frontend Web App]
+    FE -->|JSON Payload| BE[FastAPI Backend Engine]
+    
+    subgraph FastAPI Backend API
+        BE -->|Feature Engineering| FE_ENG[27 Composite Financial Features]
+        FE_ENG -->|Scaling| SC[StandardScaler]
+        SC -->|Dual Inference| LGB[LightGBM Classifier]
+        SC -->|Dual Inference| LR[Logistic Regression]
+        LGB -->|SHAP Analysis| SHAP[SHAP Tree Explainer]
+        SHAP -->|Waterfall Plot & Drivers| RESP[JSON Response]
+    end
+    
+    RESP -->|Result & Visuals| FE
+    FE -->|Renders Dashboard| User
+    
+    subgraph Conversational Credit Copilot (RAG)
+        FE -->|Retrieves Latest Audit Record| RAG[RAG Data Formatter]
+        RAG -->|Context + History + System Prompt| GEMINI[Gemini 3.1 Flash-Lite]
+        GEMINI -->|Expert Underwriting Decisions| FE
+    end
+```
 
 ---
 
 ## 🌟 Key Features
 
 1. **Stateless Multi-Service Architecture:**
-   - **Backend API:** High-speed FastAPI server managing data transformations, model inference, and SHAP calculations completely in-memory (no database required).
-   - **Frontend Web:** Responsive Flask application that maps user forms to API payloads and displays visual risk dashboards.
+   - **Backend API (FastAPI):** High-speed server managing data transformations, model inference, and SHAP calculations completely in-memory.
+   - **Frontend Web (Flask):** Dark-themed, responsive web application that maps user forms to API payloads and displays visual risk dashboards.
 2. **Dual-Model Inference:**
    - **LightGBM Classifier:** State-of-the-art tree-based classifier with detailed, feature-level SHAP impact visualizations.
    - **Logistic Regression Pipeline:** Linear baseline model containing internally pre-packaged feature scaling.
 3. **Advanced Feature Engineering:** Automatically computes 27 interaction and composite financial stress indicators (e.g. Debt Burden, Risk Score, Payment-to-Income) on-the-fly to match the models' expected 36-dimensional feature space.
 4. **Human-Readable XAI Explanations:** Binds raw, unscaled user inputs (e.g. `Income = $55,000` rather than standardized Z-scores) directly to the SHAP waterfall axis, making feature impact plots intuitive for non-technical credit underwriters.
+5. **RAG Credit Copilot Chatbot:** An in-app interactive chatbot powered by **Gemini 3.1 Flash-Lite** that automatically retrieves the applicant's latest audit record (Retrieval-Augmented Generation) and provides formal, data-driven underwriting explanations in English or Arabic.
 
 ---
 
@@ -104,29 +134,19 @@ python backend_api/test_inference.py
 Start both servers in separate terminal sessions.
 
 #### Configuration (API Key):
-You can configure your Gemini API Key in one of two ways:
-1. **Using a `.env` file (Recommended):** Create a file named `.env` in the root folder of the project and add your key:
-   ```env
-   GEMINI_API_KEY="your_gemini_api_key"
-   ```
-   *(Note: The `.env` file is already in `.gitignore` so your API key will remain safe and won't be pushed to GitHub).*
-
-2. **Using Environment Variables:**
-   ```bash
-   # Windows PowerShell
-   $env:GEMINI_API_KEY="your_gemini_api_key"
-   ```
+Create a file named `.env` in the root folder of the project (this file is already gitignored) and add your key:
+```env
+GEMINI_API_KEY="your_gemini_api_key_here"
+```
 
 **Terminal 1 (Backend FastAPI):**
 ```bash
-# From the root directory:
 python -m uvicorn backend_api.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 The interactive Swagger API documentation will be available at `http://127.0.0.1:8000/docs`.
 
 **Terminal 2 (Frontend Flask):**
 ```bash
-# From the root directory:
 python frontend_web/app.py
 ```
 Open your browser and navigate to `http://127.0.0.1:5000` to access the underwriting application.

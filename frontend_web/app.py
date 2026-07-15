@@ -17,7 +17,7 @@ BACKEND_API_URL = os.environ.get("BACKEND_API_URL", "http://127.0.0.1:8000")
 SUPABASE_URL = os.environ.get("SUPABASE_URL", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5jZW9rdmF3ZHp4d2p6cWl0c3pkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzM3MjYsImV4cCI6MjA5NzcwOTcyNn0.fNqf3Lq8MkpAwFW3yRFJ2jhHgar1NeDXZ1eLnjYOIJoo")
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "AIzaSyBSgKB8s4Kq8MsL86lLNgiWtDehIg8Xz-A")
 
-CHATBOT_MODEL = os.environ.get("GEMINI_MODEL", "models/gemini-3.5-flash")
+CHATBOT_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.1-flash-lite")
 CHATBOT_HISTORY_LIMIT = 12
 CHATBOT_HISTORY_MAX_CHARS = 1000
 
@@ -236,7 +236,7 @@ def _call_gemini(user_message, page_context, history):
     if audit_record is None:
         return NO_AUDIT_RECORD_MESSAGE
 
-    api_key = os.environ.get("GEMINI_API_KEY")
+    api_key = os.environ.get("GEMINI_API_KEY", "AQ.Ab8RN6Lh8qldotNaPjFD9gg7rAD5tJeJJmEMa0DQhg4M1gzTnw")
     if not api_key:
         return (
             "The Credit Officer service is not configured yet. Please set GEMINI_API_KEY in the "
@@ -266,6 +266,7 @@ def _call_gemini(user_message, page_context, history):
 
     candidate_models = [
         CHATBOT_MODEL,
+        "gemini-3.1-flash-lite",
         "gemini-2.5-flash",
         "gemini-2.0-flash",
     ]

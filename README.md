@@ -18,7 +18,7 @@ graph TD
     User([Applicant / Underwriter]) -->|Fills Form| FE[Flask Frontend Web App]
     FE -->|JSON Payload| BE[FastAPI Backend Engine]
     
-    subgraph FastAPI Backend API
+    subgraph "FastAPI Backend API"
         BE -->|Feature Engineering| FE_ENG[27 Composite Financial Features]
         FE_ENG -->|Scaling| SC[StandardScaler]
         SC -->|Dual Inference| LGB[LightGBM Classifier]
@@ -30,7 +30,7 @@ graph TD
     RESP -->|Result & Visuals| FE
     FE -->|Renders Dashboard| User
     
-    subgraph Conversational Credit Copilot (RAG)
+    subgraph "Conversational Credit Copilot (RAG)"
         FE -->|Retrieves Latest Audit Record| RAG[RAG Data Formatter]
         RAG -->|Context + History + System Prompt| GEMINI[Gemini 3.1 Flash-Lite]
         GEMINI -->|Expert Underwriting Decisions| FE

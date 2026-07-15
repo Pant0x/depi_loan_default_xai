@@ -301,7 +301,7 @@ def _call_gemini(user_message, page_context, history):
 
     if last_error:
         return (
-            "I cannot reach the Gemini model right now. Check GEMINI_API_KEY validity, "
+            f"I cannot reach the Gemini model right now. Error: {str(last_error)}. Check GEMINI_API_KEY validity, "
             "model access, and billing/quota in Google AI Studio."
         )
 

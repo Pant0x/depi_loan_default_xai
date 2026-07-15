@@ -79,10 +79,7 @@ The system automatically transforms raw applicant inputs into the 36 features ex
 
 ---
 
-## 🚀 Local Development Setup (In Case of Render Rate Limits / Deploy Issues)
-
-> [!NOTE]
-> If your Render deployment is slow, sleeping, or if the Credit Officer chatbot throws a `429 RESOURCE_EXHAUSTED` error (due to Render's shared outbound IPs hitting Google's free-tier rate limits), running the suite locally on your machine bypasses these limitations.
+## 🚀 Local Development Setup
 
 Ensure you have **Python 3.10+** installed.
 
@@ -133,78 +130,3 @@ The interactive Swagger API documentation will be available at `http://127.0.0.1
 python frontend_web/app.py
 ```
 Open your browser and navigate to `http://127.0.0.1:5000` to access the underwriting application.
-
-## 💻 GitHub Private Repository Setup
-
-To save your code securely on a private GitHub repository:
-
-1. **Create Repository:** Go to [github.com/new](https://github.com/new), choose a name (e.g. `loan-default-xai`), select **Private**, and leave "Initialize this repository with..." options unchecked.
-2. **Initialize Git Locally:**
-   Open a terminal in your project's root folder (`loan-default-xai/`) and run:
-   ```bash
-   git init
-   git branch -M main
-   ```
-3. **Configure Git Ignore:**
-   Create a `.gitignore` file in the root directory:
-   ```text
-   __pycache__/
-   .pytest_cache/
-   *.pyc
-   .env
-   .venv/
-   venv/
-   ```
-4. **Commit and Push:**
-   Staged files, commit, and link your local project to the GitHub remote:
-   ```bash
-   git add .
-   git commit -m "feat: complete stateless loan prediction backend & frontend with XAI SHAP explanations"
-   git remote add origin https://github.com/YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME.git
-   git push -u origin main
-   ```
-
----
-
-## ☁️ Deployment on Render
-
-Render is a developer-friendly platform to host web applications. Since this project consists of two separate services (FastAPI and Flask), you should deploy them as **two separate Web Services** from the same GitHub repository.
-
-### Service 1: Backend API (FastAPI)
-1. Log in to [Render](https://dashboard.render.com/) and click **New > Web Service**.
-2. Connect your GitHub repository.
-3. Configure the following settings:
-   - **Name:** `loan-default-xai-backend`
-   - **Region:** Choose the region closest to you
-   - **Branch:** `main`
-   - **Root Directory:** `backend_api`
-   - **Runtime:** `Python`
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `python -m uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-   - **Instance Type:** `Free` (or individual tiers)
-4. Click **Create Web Service**. Once deployed, copy your service's URL (e.g., `https://loan-default-xai-backend.onrender.com`).
-
-### Service 2: Frontend Web App (Flask)
-1. Click **New > Web Service** on Render.
-2. Connect the same GitHub repository.
-3. Configure the following settings:
-   - **Name:** `loan-default-xai-frontend`
-   - **Region:** Choose the same region as the backend
-   - **Branch:** `main`
-   - **Root Directory:** `frontend_web`
-   - **Runtime:** `Python`
-   - **Build Command:** `pip install -r requirements.txt`
-   - **Start Command:** `gunicorn app:app --bind 0.0.0.0:$PORT`
-   - **Instance Type:** `Free`
-4. Expand the **Environment Variables** section and add:
-   - **Key:** `BACKEND_API_URL`
-   - **Value:** *Paste the Backend API URL you copied in the previous step* (e.g., `https://loan-default-xai-backend.onrender.com`)
-   - **Key:** `FLASK_SECRET_KEY`
-   - **Value:** *Enter any random characters string* (e.g., `a871df91823bcda9a19c90`)
-   - **Key:** `GEMINI_API_KEY`
-   - **Value:** *Your Google Gemini API key (required for the in-app project chatbot)*
-   - **Key:** `GEMINI_MODEL` (optional)
-   - **Value:** `gemini-3.1-flash-lite`
-5. Click **Create Web Service**. 
-
-Once the frontend deployment completes, open the frontend service link to use LOAN XAI SYSTEM in production!

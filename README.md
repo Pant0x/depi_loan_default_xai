@@ -79,7 +79,10 @@ The system automatically transforms raw applicant inputs into the 36 features ex
 
 ---
 
-## 🚀 Local Development Setup
+## 🚀 Local Development Setup (In Case of Render Rate Limits / Deploy Issues)
+
+> [!NOTE]
+> If your Render deployment is slow, sleeping, or if the Credit Officer chatbot throws a `429 RESOURCE_EXHAUSTED` error (due to Render's shared outbound IPs hitting Google's free-tier rate limits), running the suite locally on your machine bypasses these limitations.
 
 Ensure you have **Python 3.10+** installed.
 
@@ -130,16 +133,6 @@ The interactive Swagger API documentation will be available at `http://127.0.0.1
 python frontend_web/app.py
 ```
 Open your browser and navigate to `http://127.0.0.1:5000` to access the underwriting application.
-
----
-
-## ⚠️ Render Troubleshooting (Gemini Chatbot Rate Limits / 429 Error)
-
-If you deploy to **Render** and receive a `429 RESOURCE_EXHAUSTED` error when chatting with the Credit Officer chatbot, this is due to **Render's shared outbound IP addresses hitting Google's free-tier rate limits**. Since hundreds of free-tier websites on Render share those same outbound IPs, Google's free-tier endpoint rate limits them.
-
-To solve this:
-1. **Run Locally:** Run the application on your local machine using the instructions in **Local Development Setup** above. Since it uses your dedicated local IP address, it will not hit the shared hosting rate limit and will work perfectly.
-2. **Upgrade to Pay-As-You-Go:** Link a billing account/card to your project in [Google AI Studio](https://aistudio.google.com/) to upgrade from the free tier. Gemini 3.1 Flash-Lite is extremely cheap (under a fraction of a cent per request) and upgrading to the paid tier removes the shared-IP rate limiting entirely on Render.
 
 ## 💻 GitHub Private Repository Setup
 
